@@ -91,7 +91,7 @@
                                     @elseif($item->status == 'dikembalikan')
                                         <span class="badge bg-success badge-status">Dikembalikan</span>
                                     @else
-                                        <span class="badge bg-danger badge-status">Terlambat test</span>
+                                        <span class="badge bg-danger badge-status">Terlambat</span>
                                     @endif
                                 </td>
                                 <td>{{ Str::limit($item->keterangan, 30) ?: '-' }}</td>
