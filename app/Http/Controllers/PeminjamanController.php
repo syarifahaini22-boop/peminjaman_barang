@@ -302,6 +302,6 @@ class PeminjamanController extends Controller
         
         $riwayat = $query->paginate(15);
         
-        return view('peminjaman.riwayat', compact('riwayat', 'keyword', 'status', 'start_date', 'end_date'));
+        return view('peminjaman.riwayat');
     }
 }

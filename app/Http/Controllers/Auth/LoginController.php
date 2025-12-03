@@ -10,20 +10,37 @@ class LoginController extends Controller
 {
     use AuthenticatesUsers;
 
-    protected $redirectTo = '/home';
+    // Jika menggunakan email sebagai username
+    protected $username = 'email';
 
-    public function __construct()
-    {
-        $this->middleware('guest')->except('logout');
-    }
-
+    // Atau override method credentials()
     protected function credentials(Request $request)
     {
-        return $request->only($this->username(), 'password');
+        return [
+            'email' => $request->input('email'),
+            'password' => $request->input('password'),
+            // 'status' => 'active', // jika ada kolom status
+        ];
     }
 
-    public function username()
+    // Atau jika ingin lebih sederhana
+    public function login(Request $request)
     {
-        return 'email';
+        $this->validateLogin($request);
+
+        // Cek credentials manual
+        $credentials = $request->only('email', 'password');
+        
+        // Tambahkan kondisi tambahan jika perlu
+        // $credentials['status'] = 'active';
+        
+        if (auth()->attempt($credentials, $request->filled('remember'))) {
+            $request->session()->regenerate();
+            return redirect()->intended('dashboard');
+        }
+
+        return back()->withErrors([
+            'email' => 'Email atau password salah.',
+        ])->onlyInput('email');
     }
 }

@@ -4,60 +4,62 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MahasiswaController;
 use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\LaporanController;
-use App\Http\Controllers\UserController;
 
-
-// Root -> login
+// Redirect root ke login
 Route::get('/', function () {
     return redirect()->route('login');
 });
 
+// Auth routes
 Auth::routes();
 
-// Dashboard
+// Dashboard (hanya untuk authenticated users)
 Route::get('/dashboard', [HomeController::class, 'index'])
     ->middleware('auth')
     ->name('dashboard');
 
-// Semua route butuh login
+// Semua route harus dalam auth
 Route::middleware(['auth'])->group(function () {
 
+    // Route untuk laporan
+    Route::get('/laporan', function () {
+        return view('laporan.index');
+    })->name('laporan.index');
+    
+    // Juga tambahkan route peminjaman.riwayat dari error sebelumnya
+    Route::get('/peminjaman/riwayat', function () {
+        return view('peminjaman.riwayat');
+    })->name('peminjaman.riwayat');
+
+    // CRUD Mahasiswa — cukup 1 kali saja!
     Route::resource('mahasiswa', MahasiswaController::class);
-    // Pastikan sudah ada
-    Route::resource('barang', BarangController::class);
-    Route::resource('peminjaman', PeminjamanController::class);
-    Route::resource('mahasiswa', MahasiswaController::class);
 
-    Route::get('/laporan/edit/{type}/{id}', [LaporanController::class, 'editFromLaporan'])
-    ->name('laporan.edit');
-
-    Route::get('/user', [UserController::class, 'index']);
-
-
-    Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
-Route::get('/laporan/pengembalian', [LaporanController::class, 'pengembalian'])->name('laporan.pengembalian');
-
-    // Barang
+    // Barang CRUD
     Route::resource('barang', App\Http\Controllers\BarangController::class);
+
+    // TRASH
+    Route::get('/barang/trash', [App\Http\Controllers\BarangController::class, 'trash'])->name('barang.trash');
+    Route::post('/barang/{id}/restore', [App\Http\Controllers\BarangController::class, 'restore'])->name('barang.restore');
+    Route::delete('/barang/{id}/force-delete', [App\Http\Controllers\BarangController::class, 'forceDelete'])->name('barang.force-delete');
+    Route::post('/barang/restore-all', [App\Http\Controllers\BarangController::class, 'restoreAll'])->name('barang.restore-all');
+    Route::post('/barang/empty-trash', [App\Http\Controllers\BarangController::class, 'emptyTrash'])->name('barang.empty-trash');
 
     // Peminjaman
     Route::resource('peminjaman', App\Http\Controllers\PeminjamanController::class);
-    Route::post('/peminjaman/{id}/kembalikan', [App\Http\Controllers\PeminjamanController::class, 'kembalikan'])
-        ->name('peminjaman.kembalikan');
+    Route::post('/peminjaman/{id}/kembalikan', [App\Http\Controllers\PeminjamanController::class, 'kembalikan'])->name('peminjaman.kembalikan');
 
-    // Laporan — bagian ini kamu tanya tadi
+    // Laporan
     Route::prefix('laporan')->name('laporan.')->group(function () {
-        Route::get('/peminjaman', [LaporanController::class, 'peminjaman'])->name('peminjaman');
-        Route::get('/pengembalian', [LaporanController::class, 'pengembalian'])->name('pengembalian');
-        Route::get('/barang', [LaporanController::class, 'barang'])->name('barang');
-        Route::get('/mahasiswa', [LaporanController::class, 'mahasiswa'])->name('mahasiswa');
-        Route::get('/export/excel', [LaporanController::class, 'exportExcel'])->name('export.excel');
-        Route::get('/export/pdf', [LaporanController::class, 'exportPdf'])->name('export.pdf');
+        Route::get('/peminjaman', 'LaporanController@peminjaman')->name('peminjaman');
+        Route::get('/pengembalian', 'LaporanController@pengembalian')->name('pengembalian');
+        Route::get('/barang', 'LaporanController@barang')->name('barang');
+        Route::get('/mahasiswa', 'LaporanController@mahasiswa')->name('mahasiswa');
+        Route::get('/export/excel', 'LaporanController@exportExcel')->name('export.excel');
+        Route::get('/export/pdf', 'LaporanController@exportPdf')->name('export.pdf');
     });
 });
 
-// Fallback
+// Jika tidak ditemukan
 Route::fallback(function () {
     if (Auth::check()) return redirect()->route('dashboard');
     return redirect()->route('login');

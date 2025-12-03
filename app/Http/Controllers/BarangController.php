@@ -157,19 +157,14 @@ class BarangController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit($id)
-{
-    $barang = Barang::findOrFail($id);
-    
-    // Tambahkan statistik
-    $stats = [
-        'total_peminjaman' => $barang->peminjaman()->count(),
-        'sedang_dipinjam' => $barang->peminjaman()->where('status', 'dipinjam')->sum('jumlah'),
-        'stok_tersedia' => $barang->stok_tersedia,
-    ];
-    
-    return view('barang.edit', compact('barang', 'stats'));
-}
+    public function edit(Barang $barang)
+    {
+        $kategori = ['elektronik', 'alat_lab', 'buku', 'perlengkapan'];
+        $status = ['tersedia', 'dipinjam', 'rusak', 'maintenance'];
+        $kondisi = ['baik', 'rusak_ringan', 'rusak_berat'];
+        
+        return view('barang.edit', compact('barang', 'kategori', 'status', 'kondisi'));
+    }
 
 
 

@@ -28,6 +28,6 @@ class UserSeeder extends Seeder
                 'jurusan' => 'Informatika',
                 'no_hp' => '081234567890'
             ]
-            ];
+        ];
     }
 }

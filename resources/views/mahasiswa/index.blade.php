@@ -5,14 +5,14 @@
 @section('content')
 <div class="container-fluid">
     <!-- Header dengan tombol tambah -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3">
-            <i class="fas fa-users"></i> Data Mahasiswa
-        </h1>
-        <a href="{{ route('mahasiswa.create') }}" class="btn btn-primary">
-            <i class="fas fa-plus"></i> Tambah Mahasiswa
-        </a>
-    </div>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3">
+        <i class="fas fa-users"></i> Data Mahasiswa
+    </h1>
+    <a href="{{ route('mahasiswa.create') }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Tambah Mahasiswa
+    </a>
+</div>
 
     <!-- Filter Section -->
     <div class="card mb-4">
@@ -22,7 +22,7 @@
                     <div class="col-md-8">
                         <input type="text" name="keyword" class="form-control" 
                                placeholder="Cari nama, NIM, email, atau jurusan..." 
-                               value="{{ request('keyword') }}">
+                               value="{{ $keyword }}">
                     </div>
                     <div class="col-md-4">
                         <div class="d-grid gap-2 d-md-flex">
@@ -57,10 +57,6 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @php
-                            $mahasiswa = App\Models\User::where('role', 'mahasiswa')->paginate(10);
-                        @endphp
-                        
                         @forelse($mahasiswa as $item)
                             <tr>
                                 <td>{{ ($mahasiswa->currentPage() - 1) * $mahasiswa->perPage() + $loop->iteration }}</td>
@@ -74,9 +70,12 @@
                                     <a href="{{ route('mahasiswa.show', $item->id) }}" class="btn btn-sm btn-info" title="Detail">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="{{ route('mahasiswa.edit', $item->id) }}" class="btn btn-sm btn-warning" title="Edit">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
+                                     <a href="{{ route('mahasiswa.show', $item->id) }}" class="btn btn-sm btn-info" title="Detail">
+        <i class="fas fa-eye"></i>
+    </a>
+    <a href="{{ route('mahasiswa.edit', $item->id) }}" class="btn btn-sm btn-warning" title="Edit">
+        <i class="fas fa-edit"></i>
+    </a>
                                     <form action="{{ route('mahasiswa.destroy', $item->id) }}" method="POST" class="d-inline">
                                         @csrf
                                         @method('DELETE')

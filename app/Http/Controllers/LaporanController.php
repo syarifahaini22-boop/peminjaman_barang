@@ -255,46 +255,4 @@ public function mahasiswa()
             'year' => $year,
         ]);
     }
-
-
-    /**
- * Edit data dari laporan
- */
-public function editFromLaporan(Request $request, $type, $id)
-{
-    switch ($type) {
-        case 'peminjaman':
-            $peminjaman = Peminjaman::findOrFail($id);
-            $barang = Barang::all();
-            $mahasiswa = User::where('role', 'mahasiswa')->get();
-            
-            return view('laporan.edit-peminjaman', compact('peminjaman', 'barang', 'mahasiswa'));
-            
-        case 'mahasiswa':
-            $mahasiswa = User::where('role', 'mahasiswa')->findOrFail($id);
-            
-            $stats = [
-                'total_peminjaman' => $mahasiswa->peminjaman()->count(),
-                'peminjaman_aktif' => $mahasiswa->peminjaman()->where('status', 'dipinjam')->count(),
-                'dikembalikan' => $mahasiswa->peminjaman()->where('status', 'dikembalikan')->count(),
-                'terlambat' => $mahasiswa->peminjaman()->where('status', 'terlambat')->count(),
-            ];
-            
-            return view('laporan.edit-mahasiswa', compact('mahasiswa', 'stats'));
-            
-        case 'barang':
-            $barang = Barang::findOrFail($id);
-            
-            $stats = [
-                'total_peminjaman' => $barang->peminjaman()->count(),
-                'sedang_dipinjam' => $barang->peminjaman()->where('status', 'dipinjam')->sum('jumlah'),
-                'stok_tersedia' => $barang->stok_tersedia,
-            ];
-            
-            return view('laporan.edit-barang', compact('barang', 'stats'));
-            
-        default:
-            return redirect()->back()->with('error', 'Tipe data tidak valid');
-    }
-}
 }

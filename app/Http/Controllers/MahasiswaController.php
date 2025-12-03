@@ -6,8 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Mahasiswa;
 use Illuminate\Http\Request;
 use App\Models\User;
-use Illuminate\Validation\Rule;
-
 
 
 class MahasiswaController extends Controller  // Pastikan nama class tepat
@@ -17,23 +15,21 @@ class MahasiswaController extends Controller  // Pastikan nama class tepat
      */
     public function index(Request $request)
 {
-    $keyword = $request->get('keyword');
-    
-    $query = User::where('role', 'mahasiswa')->latest();
-    
-    if ($keyword) {
-        $query->where(function($q) use ($keyword) {
-            $q->where('name', 'like', "%{$keyword}%")
-              ->orWhere('email', 'like', "%{$keyword}%")
-              ->orWhere('nim', 'like', "%{$keyword}%")
-              ->orWhere('jurusan', 'like', "%{$keyword}%");
-        });
-    }
-    
-    $mahasiswa = $query->paginate(10);
-    
-    // PASTIKAN INI: return view('mahasiswa.index', ...)
-    return view('mahasiswa.index', compact('mahasiswa', 'keyword'));
+    $keyword = $request->keyword;
+
+    $mahasiswa = Mahasiswa::when($keyword, function ($query) use ($keyword) {
+            $query->where('name', 'like', "%$keyword%")
+                  ->orWhere('nim', 'like', "%$keyword%")
+                  ->orWhere('email', 'like', "%$keyword%")
+                  ->orWhere('jurusan', 'like', "%$keyword%");
+        })
+        ->paginate(10)
+        ->withQueryString();
+
+    return view('mahasiswa.index', [
+        'mahasiswa' => $mahasiswa,
+        'keyword'   => $keyword,
+    ]);
 }
 
 
@@ -87,20 +83,11 @@ class MahasiswaController extends Controller  // Pastikan nama class tepat
     /**
      * Show the form for editing the specified resource.
      */
-   public function edit($id)
-{
-    $mahasiswa = User::where('role', 'mahasiswa')->findOrFail($id);
-    
-    // Tambahkan statistik
-    $stats = [
-        'total_peminjaman' => $mahasiswa->peminjaman()->count(),
-        'peminjaman_aktif' => $mahasiswa->peminjaman()->where('status', 'dipinjam')->count(),
-        'dikembalikan' => $mahasiswa->peminjaman()->where('status', 'dikembalikan')->count(),
-        'terlambat' => $mahasiswa->peminjaman()->where('status', 'terlambat')->count(),
-    ];
-    
-    return view('mahasiswa.edit', compact('mahasiswa', 'stats'));
-}
+    public function edit($id)
+    {
+        $mahasiswa = User::where('role', 'mahasiswa')->findOrFail($id);
+        return view('mahasiswa.edit', compact('mahasiswa'));
+    }
 
     /**
      * Update the specified resource in storage.
@@ -116,8 +103,7 @@ class MahasiswaController extends Controller  // Pastikan nama class tepat
                 'string',
                 'email',
                 'max:255',
-                Rule::unique('mahasiswa', 'nim')->ignore($id)
-
+                Rule::unique('users')->ignore($mahasiswa->id)
             ],
             'nim' => [
                 'required',
