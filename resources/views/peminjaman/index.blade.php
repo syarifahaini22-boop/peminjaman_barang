@@ -89,9 +89,13 @@
                                 <button class="btn btn-sm btn-info" title="Detail" data-bs-toggle="modal" data-bs-target="#detailPeminjamanModal" data-id="{{ $pinjam->id }}">
                                     <i class="bi bi-eye"></i>
                                 </button>
-                                <button class="btn btn-sm btn-warning" title="Edit" onclick="editPeminjaman({{ $pinjam->id }})">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
+                                 <a href="{{ route('peminjaman.show', $item->id) }}" class="btn btn-sm btn-info" title="Detail">
+        <i class="fas fa-eye"></i>
+    </a>
+    @if($item->status == 'dipinjam')
+        <a href="{{ route('peminjaman.edit', $item->id) }}" class="btn btn-sm btn-warning" title="Edit">
+            <i class="fas fa-edit"></i>
+        </a>
                             </td>
                         </tr>
                         @endforeach

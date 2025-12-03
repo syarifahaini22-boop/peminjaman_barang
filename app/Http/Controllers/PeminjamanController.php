@@ -35,18 +35,21 @@ class PeminjamanController extends Controller
      * Show the form for creating a new resource.
      */
     public function create()
-    {
-        // Ambil barang yang memiliki stok tersedia
-        $barang = Barang::where('stok', '>', 0)->get();
-        
-        // Ambil mahasiswa (asumsi role mahasiswa)
-        $mahasiswa = User::where('role', 'mahasiswa')->get();
-        
-        // Generate kode peminjaman otomatis
-        $kode_peminjaman = 'PINJ-' . date('Ymd') . '-' . str_pad(Peminjaman::count() + 1, 4, '0', STR_PAD_LEFT);
-        
-        return view('peminjaman.create', compact('barang', 'mahasiswa', 'kode_peminjaman'));
-    }
+{
+    // Tetap ambil barang (tanpa filter stok sementara)
+    $barang = Barang::all();
+    
+    // Ambil MAHASISWA untuk dipinjamkan barang (INI BENAR)
+    $mahasiswa = User::where('role', 'mahasiswa')->get();
+    
+    $kode_peminjaman = 'PINJ-' . date('Ymd') . '-' . str_pad(Peminjaman::count() + 1, 4, '0', STR_PAD_LEFT);
+    
+    return view('peminjaman.create', compact('barang', 'mahasiswa', 'kode_peminjaman'));
+}
+
+
+
+
 
     /**
      * Store a newly created resource in storage.
@@ -89,7 +92,7 @@ class PeminjamanController extends Controller
                 'jumlah' => $request->jumlah,
                 'keterangan' => $request->keterangan,
             ]);
-            
+
             DB::commit();
             
             return redirect()->route('peminjaman.index')
@@ -101,30 +104,33 @@ class PeminjamanController extends Controller
         }
     }
 
+
+
+
+
     /**
      * Display the specified resource.
      */
-    public function show(Peminjaman $peminjaman)
-    {
-        $peminjaman->load(['barang', 'mahasiswa']);
-        return view('peminjaman.show', compact('peminjaman'));
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Peminjaman $peminjaman)
-    {
-        if ($peminjaman->status !== 'dipinjam') {
-            return redirect()->route('peminjaman.index')
-                ->with('error', 'Hanya peminjaman yang masih aktif dapat diedit.');
-        }
-        
-        $barang = Barang::where('stok', '>', 0)->get();
-        $mahasiswa = User::where('role', 'mahasiswa')->get();
-        
-        return view('peminjaman.edit', compact('peminjaman', 'barang', 'mahasiswa'));
+{
+    if ($peminjaman->status !== 'dipinjam') {
+        return redirect()->route('peminjaman.index')
+            ->with('error', 'Hanya peminjaman yang masih aktif dapat diedit.');
     }
+    
+    $barang = Barang::all();
+    $mahasiswa = User::where('role', 'mahasiswa')->get();
+    
+    // Kirim data tambahan untuk edit
+    return view('peminjaman.edit', [
+        'peminjaman' => $peminjaman,
+        'barang' => $barang,
+        'mahasiswa' => $mahasiswa,
+        'stats' => [
+            'is_terlambat' => $peminjaman->is_terlambat,
+        ]
+    ]);
+}
 
     /**
      * Update the specified resource in storage.

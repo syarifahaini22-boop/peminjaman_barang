@@ -85,7 +85,7 @@
                     </select>
                 </div>
                 
-                <!-- Filter Row 2 -->
+                <!-- Filter Row 2
                 <div class="col-md-3">
                     <label class="form-label form-label-custom">Tahun Pengadaan</label>
                     <div class="row g-2">
@@ -100,7 +100,7 @@
                                    value="{{ $filters['tahun_max'] ?? '' }}">
                         </div>
                     </div>
-                </div>
+                </div> -->
                 
                 <!-- Filter Row 3 -->
                 <div class="col-md-3">
@@ -113,15 +113,15 @@
                     </select>
                 </div>
                 
-                <div class="col-md-2">
+                <!-- <div class="col-md-2">
                     <label class="form-label form-label-custom">Urutan</label>
                     <select name="order" class="form-select form-control-custom">
                         <option value="desc" {{ ($filters['order'] ?? 'desc') == 'desc' ? 'selected' : '' }}>Descending</option>
                         <option value="asc" {{ ($filters['order'] ?? '') == 'asc' ? 'selected' : '' }}>Ascending</option>
                     </select>
-                </div>
+                </div> -->
                 
-                <div class="col-md-2">
+                <!-- <div class="col-md-2">
                     <label class="form-label form-label-custom">Item per Halaman</label>
                     <select name="per_page" class="form-select form-control-custom">
                         <option value="10" {{ ($filters['per_page'] ?? 10) == 10 ? 'selected' : '' }}>10</option>
@@ -129,7 +129,7 @@
                         <option value="50" {{ ($filters['per_page'] ?? '') == 50 ? 'selected' : '' }}>50</option>
                         <option value="100" {{ ($filters['per_page'] ?? '') == 100 ? 'selected' : '' }}>100</option>
                     </select>
-                </div>
+                </div> -->
                 
                 <!-- Tombol Aksi Filter -->
                 <div class="col-md-5 d-flex align-items-end gap-2">
@@ -257,10 +257,12 @@
                                     </a>
                                     
                                     <!-- Tombol Edit -->
-                                    <a href="{{ route('barang.edit', $item->id) }}" 
-                                       class="btn-action btn-custom-warning" title="Edit">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
+                                    <a href="{{ route('barang.show', $item->id) }}" class="btn btn-sm btn-info" title="Detail">
+        <i class="fas fa-eye"></i>
+    </a>
+    <a href="{{ route('barang.edit', $item->id) }}" class="btn btn-sm btn-warning" title="Edit">
+        <i class="fas fa-edit"></i>
+    </a>
                                     
                                     <!-- Tombol Hapus -->
                                     @if($item->status != 'dipinjam')

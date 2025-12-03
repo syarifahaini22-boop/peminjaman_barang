@@ -9,14 +9,18 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('barang', function (Blueprint $table) {
-            $table->integer('stok')->default(0)->after('kategori');
+            if (!Schema::hasColumn('barang', 'stok')) {
+                $table->integer('stok')->default(0)->after('kategori');
+            }
         });
     }
 
     public function down(): void
     {
         Schema::table('barang', function (Blueprint $table) {
-            $table->dropColumn('stok');
+            if (Schema::hasColumn('barang', 'stok')) {
+                $table->dropColumn('stok');
+            }
         });
     }
 };

@@ -4,6 +4,8 @@ use Illuminate\Support\Str;
 
 return [
 
+    'table' => 'sessions',
+
     /*
     |--------------------------------------------------------------------------
     | Default Session Driver

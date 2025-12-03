@@ -2,42 +2,28 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Foundation\Auth\User as Authenticatable; // ✔ BENAR
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use Notifiable;
 
     protected $fillable = [
         'name',
         'email',
-        'password',
         'nim',
+        'fakultas',
         'jurusan',
-        'angkatan',
-        'no_telepon',
-        'alamat',
-        'role',
-        'foto_profil'
-    ];
-
-    protected $hidden = [
+        'no_hp',
         'password',
-        'remember_token',
-    ];
-
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-        'password' => 'hashed',
-        'angkatan' => 'integer'
+        'role',
     ];
 
     // Relasi dengan peminjaman
     public function peminjaman()
     {
-        return $this->hasMany(Peminjaman::class);
+        return $this->hasMany(Peminjaman::class, 'user_id');
     }
 
     // Peminjaman aktif user
