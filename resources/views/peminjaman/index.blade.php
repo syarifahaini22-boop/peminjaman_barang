@@ -82,20 +82,20 @@
                             </td>
                             <td>
                                 @if($pinjam->status == 'dipinjam' || $pinjam->status == 'terlambat')
-                                <button class="btn btn-sm btn-success" title="Kembalikan" onclick="kembalikanBarang({{ $pinjam->id }})">
-                                    <i class="bi bi-box-arrow-in-left"></i>
-                                </button>
+                                    <button class="btn btn-sm btn-success" title="Kembalikan" onclick="kembalikanBarang({{ $pinjam->id }})">
+                                        <i class="bi bi-box-arrow-in-left"></i>
+                                    </button>
                                 @endif
-                                <button class="btn btn-sm btn-info" title="Detail" data-bs-toggle="modal" data-bs-target="#detailPeminjamanModal" data-id="{{ $pinjam->id }}">
+                                
+                                <a href="{{ route('peminjaman.show', $pinjam->id) }}" class="btn btn-sm btn-info" title="Detail">
                                     <i class="bi bi-eye"></i>
-                                </button>
-                                 <a href="{{ route('peminjaman.show', $item->id) }}" class="btn btn-sm btn-info" title="Detail">
-        <i class="fas fa-eye"></i>
-    </a>
-    @if($item->status == 'dipinjam')
-        <a href="{{ route('peminjaman.edit', $item->id) }}" class="btn btn-sm btn-warning" title="Edit">
-            <i class="fas fa-edit"></i>
-        </a>
+                                </a>
+                                
+                                @if($pinjam->status == 'dipinjam')
+                                    <a href="{{ route('peminjaman.edit', $pinjam->id) }}" class="btn btn-sm btn-warning" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                @endif
                             </td>
                         </tr>
                         @endforeach
