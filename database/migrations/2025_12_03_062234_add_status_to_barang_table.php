@@ -11,14 +11,14 @@ class AddStatusToBarangTable extends Migration
      * Run the migrations.
      */
     public function up()
-    {
-        Schema::table('barang', function (Blueprint $table) {
-            if (!Schema::hasColumn('barang', 'status')) {
-                $table->enum('status', ['tersedia', 'tidak tersedia', 'rusak', 'dipinjam'])
-                      ->default('tersedia');
-            }
-        });
-    }
+{
+    Schema::table('barang', function (Blueprint $table) {
+        if (!Schema::hasColumn('barang', 'status')) {
+            $table->enum('status', ['tersedia', 'dipinjam', 'rusak', 'maintenance'])
+                  ->default('tersedia');
+        }
+    });
+}
 
     /**
      * Reverse the migrations.

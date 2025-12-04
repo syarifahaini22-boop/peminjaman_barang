@@ -15,22 +15,46 @@ class PeminjamanController extends Controller
      * Display a listing of the resource.
      */
     public function index(Request $request)
-    {
-        // Filter berdasarkan status
-        $status = $request->get('status');
-        
-        $query = Peminjaman::with(['barang', 'mahasiswa'])
-            ->latest();
-        
-        if ($status && in_array($status, ['dipinjam', 'dikembalikan', 'terlambat'])) {
-            $query->where('status', $status);
-        }
-        
-        $peminjaman = $query->paginate(10);
-        
-        return view('peminjaman.index', compact('peminjaman', 'status'));
+{
+    $status = $request->get('status');
+    $keyword = $request->get('keyword', '');
+    $start_date = $request->get('start_date', '');
+    $end_date = $request->get('end_date', '');
+    
+    $query = Peminjaman::with(['barang', 'mahasiswa'])
+        ->latest();
+    
+    // Filter keyword
+    if ($keyword) {
+        $query->where(function($q) use ($keyword) {
+            $q->where('kode_peminjaman', 'like', "%{$keyword}%")
+              ->orWhereHas('barang', function($q2) use ($keyword) {
+                  $q2->where('nama', 'like', "%{$keyword}%");
+              })
+              ->orWhereHas('mahasiswa', function($q2) use ($keyword) {
+                  $q2->where('name', 'like', "%{$keyword}%");
+              });
+        });
     }
-
+    
+    // Filter status
+    if ($status && in_array($status, ['dipinjam', 'dikembalikan', 'terlambat'])) {
+        $query->where('status', $status);
+    }
+    
+    // Filter tanggal
+    if ($start_date) {
+        $query->whereDate('tanggal_pinjam', '>=', $start_date);
+    }
+    
+    if ($end_date) {
+        $query->whereDate('tanggal_pinjam', '<=', $end_date);
+    }
+    
+    $riwayat = $query->paginate(10);
+    
+    return view('peminjaman.index', compact('riwayat', 'status', 'keyword', 'start_date', 'end_date'));
+}
     /**
      * Show the form for creating a new resource.
      */
@@ -105,6 +129,16 @@ class PeminjamanController extends Controller
     }
 
 
+
+
+       /**
+ * Display the specified resource.
+ */
+public function show($id)
+{
+    $peminjaman = Peminjaman::with(['barang', 'mahasiswa'])->findOrFail($id);
+    return view('peminjaman.show', compact('peminjaman'));
+}
 
 
 
@@ -263,45 +297,53 @@ class PeminjamanController extends Controller
     /**
      * Riwayat Peminjaman
      */
-    public function riwayat(Request $request)
-    {
-        $keyword = $request->get('keyword');
-        $status = $request->get('status');
-        $start_date = $request->get('start_date');
-        $end_date = $request->get('end_date');
-        
-        $query = Peminjaman::with(['barang', 'mahasiswa'])
-            ->latest();
-        
-        // Filter keyword
-        if ($keyword) {
-            $query->where(function($q) use ($keyword) {
-                $q->where('kode_peminjaman', 'like', "%{$keyword}%")
-                  ->orWhereHas('barang', function($q2) use ($keyword) {
-                      $q2->where('nama', 'like', "%{$keyword}%");
-                  })
-                  ->orWhereHas('mahasiswa', function($q2) use ($keyword) {
-                      $q2->where('name', 'like', "%{$keyword}%");
-                  });
-            });
-        }
-        
-        // Filter status
-        if ($status && in_array($status, ['dipinjam', 'dikembalikan', 'terlambat'])) {
-            $query->where('status', $status);
-        }
-        
-        // Filter tanggal
-        if ($start_date) {
-            $query->whereDate('tanggal_pinjam', '>=', $start_date);
-        }
-        
-        if ($end_date) {
-            $query->whereDate('tanggal_pinjam', '<=', $end_date);
-        }
-        
-        $riwayat = $query->paginate(15);
-        
-        return view('peminjaman.riwayat');
+    /**
+ * Riwayat Peminjaman
+ */
+public function riwayat(Request $request)
+{
+    $keyword = $request->get('keyword', '');
+    $status = $request->get('status', '');
+    $start_date = $request->get('start_date', '');
+    $end_date = $request->get('end_date', '');
+    
+    $query = Peminjaman::with(['barang', 'mahasiswa'])
+        ->latest();
+    
+    // Filter keyword
+    if ($keyword) {
+        $query->where(function($q) use ($keyword) {
+            $q->where('kode_peminjaman', 'like', "%{$keyword}%")
+              ->orWhereHas('barang', function($q2) use ($keyword) {
+                  $q2->where('nama', 'like', "%{$keyword}%");
+              })
+              ->orWhereHas('mahasiswa', function($q2) use ($keyword) {
+                  $q2->where('name', 'like', "%{$keyword}%");
+              });
+        });
     }
+    
+    // Filter status
+    if ($status && in_array($status, ['dipinjam', 'dikembalikan', 'terlambat'])) {
+        $query->where('status', $status);
+    }
+    
+    // Filter tanggal
+    if ($start_date) {
+        $query->whereDate('tanggal_pinjam', '>=', $start_date);
+    }
+    
+    if ($end_date) {
+        $query->whereDate('tanggal_pinjam', '<=', $end_date);
+    }
+    
+    $riwayat = $query->paginate(15);  // <-- Variabel $riwayat
+        return view('peminjaman.riwayat', compact(
+            'riwayat', 
+            'keyword', 
+            'status', 
+            'start_date', 
+            'end_date'
+    ));
+}
 }

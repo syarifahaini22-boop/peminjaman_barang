@@ -219,7 +219,7 @@
                                 <strong class="text-primary">{{ $item->kode_barang }}</strong>
                             </td>
                             <td>
-                                <div class="fw-medium">{{ $item->nama_barang }}</div>
+                                <div class="fw-medium">{{ $item->nama }}</div>
                                 @if($item->merek)
                                 <small class="text-muted">{{ $item->merek }}</small>
                                 @endif
@@ -256,13 +256,11 @@
                                         <i class="bi bi-eye"></i>
                                     </a>
                                     
-                                    <!-- Tombol Edit -->
-                                    <a href="{{ route('barang.show', $item->id) }}" class="btn btn-sm btn-info" title="Detail">
-        <i class="fas fa-eye"></i>
-    </a>
-    <a href="{{ route('barang.edit', $item->id) }}" class="btn btn-sm btn-warning" title="Edit">
-        <i class="fas fa-edit"></i>
-    </a>
+                                   <!-- Tombol Edit -->
+                                    <a href="{{ route('barang.edit', $item->id) }}" 
+                                    class="btn-action btn-custom-warning" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
                                     
                                     <!-- Tombol Hapus -->
                                     @if($item->status != 'dipinjam')

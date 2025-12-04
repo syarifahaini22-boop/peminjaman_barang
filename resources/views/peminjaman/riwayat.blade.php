@@ -7,29 +7,30 @@
     <!-- Filter Section -->
     <div class="filter-card">
         <h5><i class="fas fa-filter"></i> Filter Riwayat</h5>
-        <form method="GET" action="{{ route('peminjaman.riwayat') }}">
+        <form method="GET" action="{{ route('peminjaman.index') }}">
+        <a href="{{ route('peminjaman.index') }}" class="btn btn-secondary">
             <div class="row g-3">
                 <div class="col-md-3">
                     <label class="form-label">Keyword</label>
                     <input type="text" name="keyword" class="form-control" 
-                           value="{{ $keyword }}" placeholder="Cari kode/nama...">
+                           <input value="{{ $keyword ?? '' }}">
                 </div>
                 <div class="col-md-2">
                     <label class="form-label">Status</label>
-                    <select name="status" class="form-select">
+                    <select name="status" class="form-select" value="{{ $status ?? '' }}">
                         <option value="">Semua</option>
-                        <option value="dipinjam" {{ $status == 'dipinjam' ? 'selected' : '' }}>Dipinjam</option>
-                        <option value="dikembalikan" {{ $status == 'dikembalikan' ? 'selected' : '' }}>Dikembalikan</option>
-                        <option value="terlambat" {{ $status == 'terlambat' ? 'selected' : '' }}>Terlambat</option>
+                        <option value="dipinjam">Dipinjam</option>
+                        <option value="dikembalikan">Dikembalikan</option>
+                        <option value="terlambat">Terlambat</option>
                     </select>
                 </div>
                 <div class="col-md-2">
                     <label class="form-label">Dari Tanggal</label>
-                    <input type="date" name="start_date" class="form-control" value="{{ $start_date }}">
+                    <input type="date" name="start_date" class="form-control" value="{{ $start_date ?? '' }}">
                 </div>
                 <div class="col-md-2">
                     <label class="form-label">Sampai Tanggal</label>
-                    <input type="date" name="end_date" class="form-control" value="{{ $end_date }}">
+                    <input type="date" name="end_date" class="form-control" value="{{ $end_date ?? '' }}">
                 </div>
                 <div class="col-md-3">
                     <label class="form-label">&nbsp;</label>
@@ -70,7 +71,11 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($riwayat as $item)
+                    @php
+                        // Jika $riwayat tidak ada, gunakan $peminjaman
+                        $riwayat = $riwayat ?? $peminjaman ?? [];
+                    @endphp
+                        @forelse(($riwayat ?? $peminjaman) as $item)
                             <tr>
                                 <td><strong>{{ $item->kode_peminjaman }}</strong></td>
                                 <td>{{ $item->barang->nama }}</td>

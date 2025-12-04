@@ -41,15 +41,15 @@
                     </div>
                     
                     <div class="col-md-8 mb-3">
-                        <label for="nama_barang" class="form-label form-label-custom">Nama Barang *</label>
-                        <input type="text" class="form-control form-control-custom @error('nama_barang') is-invalid @enderror" 
-                               id="nama_barang" name="nama_barang" 
-                               value="{{ old('nama_barang') }}" required
-                               placeholder="Masukkan nama lengkap barang">
-                        @error('nama_barang')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
+    <label for="nama" class="form-label form-label-custom">Nama Barang *</label>
+    <input type="text" class="form-control form-control-custom @error('nama') is-invalid @enderror" 
+           id="nama" name="nama" 
+           value="{{ old('nama') }}" required
+           placeholder="Masukkan nama lengkap barang">
+    @error('nama')
+        <div class="invalid-feedback">{{ $message }}</div>
+    @enderror
+</div>
                 </div>
                 
                 <div class="row">

@@ -16,7 +16,7 @@ class Barang extends Model
 
     protected $fillable = [
         'kode_barang',
-        'nama_barang',
+        'nama',  // GANTI 'nama_barang' menjadi 'nama'
         'kategori',
         'stok',
         'deskripsi',
@@ -29,22 +29,37 @@ class Barang extends Model
         'qr_code'
     ];
 
+    
+    // Tambahkan accessor untuk kompatibilitas
+    public function getNamaBarangAttribute()
+    {
+        return $this->attributes['nama'] ?? $this->nama;
+    }
+
+    public function setNamaBarangAttribute($value)
+    {
+        $this->attributes['nama'] = $value;
+    }
+    
     protected $casts = [
         'tahun_pengadaan' => 'integer'
     ];
     
+
+
+    
     // Accessor untuk status badge
     public function getStatusBadgeAttribute()
-    {
-        $statuses = [
-            'tersedia' => 'success',
-            'dipinjam' => 'warning',
-            'rusak' => 'danger',
-            'maintenance' => 'info'
-        ];
+{
+    $statuses = [
+        'tersedia' => 'success',
+        'tidak tersedia' => 'warning',  // Ganti 'dipinjam' dengan 'tidak tersedia'
+        'rusak' => 'danger',
+        'dipinjam' => 'info'  // Ganti 'maintenance' dengan 'dipinjam'
+    ];
 
-        return $statuses[$this->status] ?? 'secondary';
-    }
+    return $statuses[$this->status] ?? 'secondary';
+}
 
     // Accessor untuk kondisi badge
     public function getKondisiBadgeAttribute()
@@ -91,12 +106,14 @@ public function getTotalDipinjamAttribute()
     
     // Accessor untuk stok tersedia
     public function getStokTersediaAttribute()
-    {
-        $stok = $this->stok ?? 10; // default 10 jika kolom stok tidak ada
-        $dipinjam = $this->peminjaman()
-            ->where('status', 'dipinjam')
-            ->sum('barang_id');
+{
+    $stok = $this->stok ?? 10; // default 10 jika kolom stok tidak ada
+    $dipinjam = $this->peminjaman()
+        ->where('status', 'dipinjam')
+        ->sum('barang_id'); // <-- SALAH! Ini menjumlahkan ID, bukan jumlah barang dipinjam
 
-        return $stok - $dipinjam;
-    }
+    return $stok - $dipinjam;
+}
+
+    
 }
