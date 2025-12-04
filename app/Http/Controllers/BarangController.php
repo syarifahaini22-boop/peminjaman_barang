@@ -119,7 +119,7 @@ class BarangController extends Controller
             'kode_barang' => 'required|unique:barang,kode_barang|max:50',
             'nama' => 'required|max:255', // Kolom ini ADA di database
             'kategori' => 'required',
-            'lokasi' => 'required|max:100',
+            'lokasi' => 'nullable',
             'deskripsi' => 'nullable',
             'gambar' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             // HAPUS validasi untuk kolom yang BELUM ADA di database
@@ -130,7 +130,7 @@ class BarangController extends Controller
             'kode_barang' => $validated['kode_barang'],
             'nama' => $validated['nama'],
             'kategori' => $validated['kategori'],
-            'lokasi' => $validated['lokasi'],
+            'lokasi' => $validated['lokasi'] ?? null,
             'deskripsi' => $validated['deskripsi'] ?? null,
             // TAMBAHKAN DEFAULT VALUE UNTUK KOLOM YANG BELUM ADA
             'stok' => 0, // Default stok 0

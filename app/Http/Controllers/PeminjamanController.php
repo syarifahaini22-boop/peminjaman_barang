@@ -58,9 +58,6 @@ class PeminjamanController extends Controller
     }
 
 
-
-
-
     /**
      * Show the form for creating a new resource.
      */
@@ -165,8 +162,6 @@ class PeminjamanController extends Controller
         $peminjaman = Peminjaman::with(['barang', 'mahasiswa'])->findOrFail($id);
         return view('peminjaman.show', compact('peminjaman'));
     }
-
-
 
     /**
      * Display the specified resource.
