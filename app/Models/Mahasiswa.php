@@ -9,14 +9,19 @@ class Mahasiswa extends Model
 {
     use HasFactory;
 
-     // Tambahkan ini di dalam class Mahasiswa
-    protected $table = 'mahasiswa'; // Menentukan nama tabel secara manual
+    protected $table = 'mahasiswa';
 
     protected $fillable = [
-        'name',
         'nim',
+        'name',
         'no_hp',
         'fakultas',
-        'jurusan',
+        'jurusan'
     ];
+
+    // PERBAIKAN: Relasi ke peminjaman melalui users
+    public function peminjaman()
+    {
+        return $this->hasMany(Peminjaman::class, 'user_id');
+    }
 }

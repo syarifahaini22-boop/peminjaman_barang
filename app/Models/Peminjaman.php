@@ -10,22 +10,26 @@ class Peminjaman extends Model
     use HasFactory;
 
     protected $table = 'peminjaman';
-    
+
     protected $fillable = [
         'barang_id',
-        'mahasiswa_id',
+        'user_id', // Bukan mahasiswa_id
         'kode_peminjaman',
-        'tanggal_pinjam',
-        'tanggal_kembali',
+        'tanggal_peminjaman',
+        'tanggal_pengembalian',
         'tanggal_dikembalikan',
         'status',
-        'jumlah',
-        'keterangan'
+        'tujuan_peminjaman',
+        'lokasi_penggunaan',
+        'dosen_pengampu',
+        'catatan',
+        'kondisi_kembali',
+        'catatan_kembali',
     ];
 
     protected $casts = [
-        'tanggal_pinjam' => 'date',
-        'tanggal_kembali' => 'date',
+        'tanggal_peminjaman' => 'date',
+        'tanggal_pengembalian' => 'date',
         'tanggal_dikembalikan' => 'date',
     ];
 
@@ -34,11 +38,14 @@ class Peminjaman extends Model
     {
         return $this->belongsTo(Barang::class);
     }
+    public function user()
+    {
+        return $this->belongsTo(Mahasiswa::class, 'user_id');
+    }
 
-    // Relasi ke Mahasiswa (User)
     public function mahasiswa()
     {
-        return $this->belongsTo(User::class, 'mahasiswa_id');
+        return $this->belongsTo(Mahasiswa::class, 'user_id');
     }
 
     // Scope untuk filter status
@@ -57,5 +64,18 @@ class Peminjaman extends Model
             return true;
         }
         return false;
+    }
+
+
+
+    // TAMBAHKAN accessor untuk kompatibilitas
+    public function getMahasiswaIdAttribute()
+    {
+        return $this->user_id;
+    }
+
+    public function setMahasiswaIdAttribute($value)
+    {
+        $this->attributes['user_id'] = $value;
     }
 }

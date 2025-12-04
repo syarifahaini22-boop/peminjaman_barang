@@ -1,40 +1,42 @@
 <?php
 
-namespace App\Http\Controllers;  // Pastikan namespace ini benar
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\Mahasiswa;
 use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Validation\Rule;
 
-
-class MahasiswaController extends Controller  // Pastikan nama class tepat
+class MahasiswaController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Menampilkan daftar mahasiswa
      */
     public function index(Request $request)
 {
+    // Ambil keyword pencarian
     $keyword = $request->keyword;
 
+    // Ambil data dari tabel MAHASISWA (bukan users)
     $mahasiswa = Mahasiswa::when($keyword, function ($query) use ($keyword) {
-            $query->where('name', 'like', "%$keyword%")
-                  ->orWhere('nim', 'like', "%$keyword%")
-                  ->orWhere('email', 'like', "%$keyword%")
-                  ->orWhere('jurusan', 'like', "%$keyword%");
+            $query->where('name', 'like', "%{$keyword}%")
+                  ->orWhere('nim', 'like', "%{$keyword}%")
+                  ->orWhere('fakultas', 'like', "%{$keyword}%")
+                  ->orWhere('jurusan', 'like', "%{$keyword}%");
         })
+        ->orderBy('name') // Urutkan berdasarkan nama
         ->paginate(10)
         ->withQueryString();
 
+    // Kirim data ke view
     return view('mahasiswa.index', [
         'mahasiswa' => $mahasiswa,
         'keyword'   => $keyword,
     ]);
 }
 
-
     /**
-     * Show the form for creating a new resource.
+     * Menampilkan form tambah mahasiswa
      */
     public function create()
     {
@@ -42,120 +44,140 @@ class MahasiswaController extends Controller  // Pastikan nama class tepat
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Menyimpan mahasiswa baru
      */
-    public function store(Request $request)
-    {
-        // Validasi
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'nim' => 'required|string|unique:mahasiswa,nim|max:20',
-            'no_hp' => 'nullable|string|max:15',
-            'fakultas' => 'required|string|max:255',
-            'jurusan' => 'required|string|max:255',
-        ]);
+public function store(Request $request)
+{
+    // Validasi data input sesuai form
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'nim' => 'required|string|max:20|unique:mahasiswa,nim', // Validasi untuk tabel mahasiswa
+        'no_hp' => 'nullable|string|max:15',
+        'fakultas' => 'required|string|max:255',
+        'jurusan' => 'required|string|max:255',
+    ]);
 
-        // Simpan data
-        Mahasiswa::create($request->all());
+    // Simpan data ke tabel MAHASISWA (bukan users)
+    Mahasiswa::create([
+        'name' => $request->name,
+        'nim' => $request->nim,
+        'no_hp' => $request->no_hp,
+        'fakultas' => $request->fakultas,
+        'jurusan' => $request->jurusan,
+    ]);
 
-        return redirect()->route('mahasiswa.index')
-            ->with('success', 'Mahasiswa berhasil ditambahkan!');
-    }
+    // Redirect dengan pesan sukses
+    return redirect()->route('mahasiswa.index')
+        ->with('success', 'Mahasiswa berhasil ditambahkan!');
+}
 
-
+    /**
+     * Menampilkan detail mahasiswa
+     */
+   public function show($id)
+{
+    // Cari mahasiswa dari tabel MAHASISWA
+    $mahasiswa = Mahasiswa::find($id);
     
-    /**
-     * Display the specified resource.
-     */
-    public function show($id)
-    {
-        $mahasiswa = User::where('role', 'mahasiswa')->findOrFail($id);
-        
-        // Ambil riwayat peminjaman mahasiswa
-        $riwayat = $mahasiswa->peminjaman()
-            ->with('barang')
-            ->latest()
-            ->paginate(10);
-            
-        return view('mahasiswa.show', compact('mahasiswa', 'riwayat'));
+    // Jika tidak ditemukan, tampilkan error 404
+    if (!$mahasiswa) {
+        abort(404, 'Mahasiswa tidak ditemukan');
     }
+    
+    // Ambil riwayat peminjaman (jika ada relasi)
+    $riwayat = $mahasiswa->peminjaman()
+        ->with('barang')
+        ->latest()
+        ->paginate(10);
+        
+    // Tampilkan view detail
+    return view('mahasiswa.show', compact('mahasiswa', 'riwayat'));
+}
 
     /**
-     * Show the form for editing the specified resource.
+     * Menampilkan form edit mahasiswa
      */
     public function edit($id)
-    {
-        $mahasiswa = User::where('role', 'mahasiswa')->findOrFail($id);
-        return view('mahasiswa.edit', compact('mahasiswa'));
+{
+    // Cari mahasiswa dari tabel MAHASISWA
+    $mahasiswa = Mahasiswa::find($id);
+    
+    // Jika tidak ditemukan, tampilkan error 404
+    if (!$mahasiswa) {
+        abort(404, 'Mahasiswa tidak ditemukan');
     }
-
+    
+    // Tampilkan form edit
+    return view('mahasiswa.edit', compact('mahasiswa'));
+}
     /**
-     * Update the specified resource in storage.
+     * Mengupdate data mahasiswa
      */
     public function update(Request $request, $id)
-    {
-        $mahasiswa = User::where('role', 'mahasiswa')->findOrFail($id);
-        
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => [
-                'required',
-                'string',
-                'email',
-                'max:255',
-                Rule::unique('users')->ignore($mahasiswa->id)
-            ],
-            'nim' => [
-                'required',
-                'string',
-                'max:20',
-                Rule::unique('users')->ignore($mahasiswa->id)
-            ],
-            'password' => 'nullable|string|min:8|confirmed',
-            'fakultas' => 'required|string|max:100',
-            'jurusan' => 'required|string|max:100',
-            'no_hp' => 'nullable|string|max:15',
-        ]);
-
-        $data = [
-            'name' => $request->name,
-            'email' => $request->email,
-            'nim' => $request->nim,
-            'fakultas' => $request->fakultas,
-            'jurusan' => $request->jurusan,
-            'no_hp' => $request->no_hp,
-        ];
-
-        if ($request->filled('password')) {
-            $data['password'] = bcrypt($request->password);
-        }
-
-        $mahasiswa->update($data);
-
-        return redirect()->route('mahasiswa.index')
-            ->with('success', 'Data mahasiswa berhasil diupdate.');
+{
+    // Cari mahasiswa dari tabel MAHASISWA
+    $mahasiswa = Mahasiswa::find($id);
+    
+    // Jika tidak ditemukan, tampilkan error 404
+    if (!$mahasiswa) {
+        abort(404, 'Mahasiswa tidak ditemukan');
     }
+    
+    // Validasi data input
+    $request->validate([
+        'name' => 'required|string|max:255',
+        'nim' => [
+            'required',
+            'string',
+            'max:20',
+            Rule::unique('mahasiswa')->ignore($mahasiswa->id) // unique untuk tabel mahasiswa
+        ],
+        'no_hp' => 'nullable|string|max:15',
+        'fakultas' => 'required|string|max:255',
+        'jurusan' => 'required|string|max:255',
+    ]);
+
+    // Update data mahasiswa
+    $mahasiswa->update($request->all());
+
+    // Redirect dengan pesan sukses
+    return redirect()->route('mahasiswa.index')
+        ->with('success', 'Data mahasiswa berhasil diupdate.');
+}
 
     /**
-     * Remove the specified resource from storage.
+     * Menghapus mahasiswa
      */
     public function destroy($id)
-    {
-        $mahasiswa = User::where('role', 'mahasiswa')->findOrFail($id);
+{
+    try {
+        $mahasiswa = Mahasiswa::find($id);
         
-        // Cek apakah mahasiswa masih memiliki peminjaman aktif
-        $peminjamanAktif = $mahasiswa->peminjaman()
-            ->where('status', 'dipinjam')
-            ->exists();
-            
-        if ($peminjamanAktif) {
+        if (!$mahasiswa) {
             return redirect()->route('mahasiswa.index')
-                ->with('error', 'Mahasiswa masih memiliki peminjaman aktif. Tidak dapat dihapus.');
+                ->with('error', 'Mahasiswa tidak ditemukan!');
         }
         
+        
+        
+        // OPSI 2: Langsung cek di tabel peminjaman (jika ada relasi user_id dengan nim)
+        // $peminjamanAktif = Peminjaman::whereHas('user', function($query) use ($mahasiswa) {
+        //         $query->where('nim', $mahasiswa->nim);
+        //     })
+        //     ->where('status', 'dipinjam')
+        //     ->exists();
+        
+        // Hapus mahasiswa
         $mahasiswa->delete();
+        
+        
         
         return redirect()->route('mahasiswa.index')
             ->with('success', 'Data mahasiswa berhasil dihapus.');
+            
+    } catch (\Exception $e) {
+        return redirect()->route('mahasiswa.index')
+            ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
     }
+}
 }
