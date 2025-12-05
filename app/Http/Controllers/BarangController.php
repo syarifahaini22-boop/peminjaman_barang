@@ -23,9 +23,9 @@ class BarangController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('kode_barang', 'like', "%{$search}%")
                     ->orWhere('nama', 'like', "%{$search}%")
-                    ->orWhere('merek', 'like', "%{$search}%")
                     ->orWhere('deskripsi', 'like', "%{$search}%")
                     ->orWhere('lokasi', 'like', "%{$search}%");
+                // HAPUS: ->orWhere('merek', 'like', "%{$search}%") karena kolom tidak ada
             });
         }
 
@@ -40,25 +40,32 @@ class BarangController extends Controller
         }
 
         // ===== FILTER KONDISI =====
+        // HAPUS atau CEK jika kolom 'kondisi' ada di database
         if ($request->has('kondisi') && !empty($request->kondisi)) {
-            $query->where('kondisi', $request->kondisi);
+            // Cek dulu apakah kolom kondisi ada
+            // $query->where('kondisi', $request->kondisi);
         }
 
         // ===== FILTER TAHUN =====
+        // HAPUS atau CEK jika kolom 'tahun_pengadaan' ada di database
         if ($request->has('tahun_min') && !empty($request->tahun_min)) {
-            $query->where('tahun_pengadaan', '>=', $request->tahun_min);
+            // Cek dulu apakah kolom tahun_pengadaan ada
+            // $query->where('tahun_pengadaan', '>=', $request->tahun_min);
         }
 
         if ($request->has('tahun_max') && !empty($request->tahun_max)) {
-            $query->where('tahun_pengadaan', '<=', $request->tahun_max);
+            // Cek dulu apakah kolom tahun_pengadaan ada
+            // $query->where('tahun_pengadaan', '<=', $request->tahun_max);
         }
 
         // ===== SORTING =====
         $sort = $request->get('sort', 'created_at');
         $order = $request->get('order', 'desc');
 
-        // Validasi field sorting
-        $allowedSorts = ['kode_barang', 'nama', 'created_at', 'updated_at', 'tahun_pengadaan'];
+        // Validasi field sorting - HAPUS 'tahun_pengadaan' jika tidak ada
+        $allowedSorts = ['kode_barang', 'nama', 'created_at', 'updated_at'];
+        // HAPUS: 'tahun_pengadaan' dari $allowedSorts jika kolom tidak ada
+
         if (!in_array($sort, $allowedSorts)) {
             $sort = 'created_at';
         }
@@ -79,15 +86,18 @@ class BarangController extends Controller
             'total' => Barang::count(),
             'tersedia' => Barang::where('status', 'tersedia')->count(),
             'dipinjam' => Barang::where('status', 'dipinjam')->count(),
-            'rusak' => Barang::where('kondisi', '!=', 'baik')->count(),
             'elektronik' => Barang::where('kategori', 'elektronik')->count(),
             'alat_lab' => Barang::where('kategori', 'alat_lab')->count(),
             'buku' => Barang::where('kategori', 'buku')->count(),
             'perlengkapan' => Barang::where('kategori', 'perlengkapan')->count(),
         ];
 
+        // HAPUS statistik 'rusak' jika kolom 'kondisi' tidak ada
+        // $stats['rusak'] = Barang::where('kondisi', '!=', 'baik')->count();
+
         // Simpan filter untuk view
-        $filters = $request->only(['search', 'kategori', 'status', 'kondisi', 'tahun_min', 'tahun_max', 'sort', 'order', 'per_page']);
+        $filters = $request->only(['search', 'kategori', 'status', 'sort', 'order', 'per_page']);
+        // HAPUS: 'kondisi', 'tahun_min', 'tahun_max' dari $filters jika kolom tidak ada
 
         return view('barang.index', compact('barang', 'stats', 'filters'));
     }
@@ -181,21 +191,26 @@ class BarangController extends Controller
      */
     public function update(Request $request, Barang $barang)
     {
-        // Validasi - GUNAKAN 'nama' BUKAN 'nama_barang'
+        // Validasi - HAPUS 'merek' dan 'tahun_pengadaan' jika kolom tidak ada
         $validated = $request->validate([
             'kode_barang' => 'required|max:50|unique:barang,kode_barang,' . $barang->id,
-            'nama' => 'required|max:255', // <-- GANTI 'nama_barang' MENJADI 'nama'
+            'nama' => 'required|max:255',
             'kategori' => 'required|in:elektronik,alat_lab,buku,perlengkapan',
             'deskripsi' => 'nullable',
-            'merek' => 'nullable|max:100',
+            // 'merek' => 'nullable|max:100', // HAPUS JIKA KOLOM TIDAK ADA
             'status' => 'required|in:tersedia,dipinjam,rusak,maintenance',
-            'lokasi' => 'required|max:100',
-            'kondisi' => 'required|in:baik,rusak_ringan,rusak_berat',
-            'tahun_pengadaan' => 'nullable|digits:4|integer|min:2000|max:' . date('Y'),
+            'lokasi' => 'nullable|max:100', // Ubah required menjadi nullable
+            // 'kondisi' => 'required|in:baik,rusak_ringan,rusak_berat', // HAPUS JIKA KOLOM TIDAK ADA
+            // 'tahun_pengadaan' => 'nullable|digits:4|integer|min:2000|max:' . date('Y'), // HAPUS JIKA KOLOM TIDAK ADA
             'gambar' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        // Handle gambar upload - GUNAKAN 'nama' BUKAN 'nama_barang'
+        // HAPUS kolom yang tidak ada dari $validated
+        unset($validated['merek']);
+        unset($validated['kondisi']);
+        unset($validated['tahun_pengadaan']);
+
+        // Handle gambar upload
         if ($request->hasFile('gambar')) {
             // Hapus gambar lama jika ada
             if ($barang->gambar && Storage::exists('public/' . $barang->gambar)) {
@@ -203,7 +218,7 @@ class BarangController extends Controller
             }
 
             $image = $request->file('gambar');
-            $imageName = time() . '_' . Str::slug($validated['nama']) . '.' . $image->getClientOriginalExtension(); // <-- GANTI
+            $imageName = time() . '_' . Str::slug($validated['nama']) . '.' . $image->getClientOriginalExtension();
             $image->storeAs('public/barang', $imageName);
             $validated['gambar'] = 'barang/' . $imageName;
         } else {

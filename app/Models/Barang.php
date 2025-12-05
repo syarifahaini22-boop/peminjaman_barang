@@ -29,7 +29,7 @@ class Barang extends Model
         'qr_code'
     ];
 
-    
+
     // Tambahkan accessor untuk kompatibilitas
     public function getNamaBarangAttribute()
     {
@@ -40,26 +40,26 @@ class Barang extends Model
     {
         $this->attributes['nama'] = $value;
     }
-    
+
     protected $casts = [
         'tahun_pengadaan' => 'integer'
     ];
-    
 
 
-    
+
+
     // Accessor untuk status badge
     public function getStatusBadgeAttribute()
-{
-    $statuses = [
-        'tersedia' => 'success',
-        'tidak tersedia' => 'warning',  // Ganti 'dipinjam' dengan 'tidak tersedia'
-        'rusak' => 'danger',
-        'dipinjam' => 'info'  // Ganti 'maintenance' dengan 'dipinjam'
-    ];
+    {
+        $statuses = [
+            'tersedia' => 'success',
+            'tidak tersedia' => 'warning',  // Ganti 'dipinjam' dengan 'tidak tersedia'
+            'rusak' => 'danger',
+            'dipinjam' => 'info'  // Ganti 'maintenance' dengan 'dipinjam'
+        ];
 
-    return $statuses[$this->status] ?? 'secondary';
-}
+        return $statuses[$this->status] ?? 'secondary';
+    }
 
     // Accessor untuk kondisi badge
     public function getKondisiBadgeAttribute()
@@ -76,44 +76,42 @@ class Barang extends Model
 
 
     public function peminjamanAktif()
-{
-    return $this->hasOne(Peminjaman::class)
-                ->where('status', 'dipinjam')
-                ->latest(); // ambil yang terbaru
-}
+    {
+        return $this->hasOne(Peminjaman::class)
+            ->where('status', 'dipinjam')
+            ->latest(); // ambil yang terbaru
+    }
 
 
-// Jika ingin menghitung berapa banyak yang sedang dipinjam
-public function getTotalDipinjamAttribute()
-{
-    // Jika tidak ada kolom jumlah, hitung berdasarkan jumlah record
-    return $this->peminjamans()->where('status', 'dipinjam')->count();
-    
-    // Atau jika ada kolom quantity/jumlah:
-    // return $this->peminjamans()->where('status', 'dipinjam')->sum('quantity');
-}
+    // Jika ingin menghitung berapa banyak yang sedang dipinjam
+    public function getTotalDipinjamAttribute()
+    {
+        // Jika tidak ada kolom jumlah, hitung berdasarkan jumlah record
+        return $this->peminjaman()->where('status', 'dipinjam')->count();
+
+        // Atau jika ada kolom quantity/jumlah:
+        // return $this->peminjamans()->where('status', 'dipinjam')->sum('quantity');
+    }
 
 
 
 
-     protected $appends = ['stok_tersedia'];
-    
+    protected $appends = ['stok_tersedia'];
+
     // Relasi ke Peminjaman
     public function peminjaman()
     {
         return $this->hasMany(Peminjaman::class);
     }
-    
+
     // Accessor untuk stok tersedia
     public function getStokTersediaAttribute()
-{
-    $stok = $this->stok ?? 10; // default 10 jika kolom stok tidak ada
-    $dipinjam = $this->peminjaman()
-        ->where('status', 'dipinjam')
-        ->sum('barang_id'); // <-- SALAH! Ini menjumlahkan ID, bukan jumlah barang dipinjam
+    {
+        $stok = $this->stok ?? 10; // default 10 jika kolom stok tidak ada
+        $dipinjam = $this->peminjaman()
+            ->where('status', 'dipinjam')
+            ->sum('barang_id'); // <-- SALAH! Ini menjumlahkan ID, bukan jumlah barang dipinjam
 
-    return $stok - $dipinjam;
-}
-
-    
+        return $stok - $dipinjam;
+    }
 }
