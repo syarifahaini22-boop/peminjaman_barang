@@ -129,38 +129,30 @@
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-8 mb-3">
-                            <label for="deskripsi" class="form-label form-label-custom">Deskripsi</label>
-                            <textarea class="form-control form-control-custom @error('deskripsi') is-invalid @enderror" id="deskripsi"
-                                name="deskripsi" rows="4" placeholder="Deskripsi detail tentang barang">{{ old('deskripsi') }}</textarea>
-                            @error('deskripsi')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
 
 
-                    </div>
 
-                    <!-- Tombol Aksi -->
-                    <div class="d-flex justify-content-between align-items-center mt-5 pt-4 border-top">
-                        <div>
-                            <button type="reset" class="btn btn-custom btn-custom-outline">
-                                <i class="bi bi-eraser me-1"></i> Reset Form
-                            </button>
-                        </div>
-                        <div class="btn-group">
-                            <a href="{{ route('barang.index') }}" class="btn btn-custom btn-custom-secondary me-2">
-                                <i class="bi bi-x-circle me-1"></i> Batal
-                            </a>
-                            <button type="submit" class="btn btn-custom btn-custom-primary">
-                                <i class="bi bi-save me-1"></i> Simpan Barang
-                            </button>
-                        </div>
-                    </div>
-                </form>
             </div>
+
+            <!-- Tombol Aksi -->
+            <div class="d-flex justify-content-between align-items-center mt-5 pt-4 border-top">
+                <div>
+                    <button type="reset" class="btn btn-custom btn-custom-outline">
+                        <i class="bi bi-eraser me-1"></i> Reset Form
+                    </button>
+                </div>
+                <div class="btn-group">
+                    <a href="{{ route('barang.index') }}" class="btn btn-custom btn-custom-secondary me-2">
+                        <i class="bi bi-x-circle me-1"></i> Batal
+                    </a>
+                    <button type="submit" class="btn btn-custom btn-custom-primary">
+                        <i class="bi bi-save me-1"></i> Simpan Barang
+                    </button>
+                </div>
+            </div>
+            </form>
         </div>
+    </div>
     </div>
 
     <!-- Style Tambahan untuk Form -->

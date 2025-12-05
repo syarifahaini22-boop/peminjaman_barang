@@ -31,13 +31,13 @@ class LoginController extends Controller
 
         // Cek credentials manual
         $credentials = $request->only('email', 'password');
-        
+
         // Tambahkan kondisi tambahan jika perlu
         // $credentials['status'] = 'active';
-        
+
         if (Auth::attempt($credentials, $request->filled('remember'))) {
             $request->session()->regenerate();
-            return redirect()->intended('dashboard');
+            return redirect()->route('peminjaman.index');
         }
 
         return back()->withErrors([
