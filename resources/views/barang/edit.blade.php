@@ -13,14 +13,6 @@
                     </div>
                     <div class="card-body">
                         <form action="{{ route('barang.update', $barang->id) }}" method="POST" enctype="multipart/form-data">
-
-                            <!-- Di bagian bawah form -->
-                            <div class="d-flex justify-content-between mt-4">
-
-                                <div class="btn-group">
-
-                                </div>
-                            </div>
                             @csrf
                             @method('PUT')
 
@@ -37,11 +29,10 @@
                                 </div>
 
                                 <div class="col-md-6 mb-3">
-                                    <label for="nama_barang" class="form-label">Nama Barang *</label>
-                                    <input type="text" class="form-control @error('nama_barang') is-invalid @enderror"
-                                        id="nama_barang" name="nama_barang"
-                                        value="{{ old('nama_barang', $barang->nama_barang) }}" required>
-                                    @error('nama_barang')
+                                    <label for="nama" class="form-label">Nama Barang *</label>
+                                    <input type="text" class="form-control @error('nama') is-invalid @enderror"
+                                        id="nama" name="nama" value="{{ old('nama', $barang->nama) }}" required>
+                                    @error('nama')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
@@ -72,12 +63,14 @@
                                 </div>
 
                                 <div class="col-md-6 mb-3">
-                                    <label for="merek" class="form-label">Merek</label>
-                                    <input type="text" class="form-control @error('merek') is-invalid @enderror"
-                                        id="merek" name="merek" value="{{ old('merek', $barang->merek) }}">
-                                    @error('merek')
+                                    <label for="stok" class="form-label">Stok *</label>
+                                    <input type="number" class="form-control @error('stok') is-invalid @enderror"
+                                        id="stok" name="stok" value="{{ old('stok', $barang->stok) }}"
+                                        min="0" required>
+                                    @error('stok')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
+                                    <small class="text-muted">Jumlah barang yang tersedia</small>
                                 </div>
                             </div>
 
@@ -93,8 +86,7 @@
                                 <div class="col-md-4 mb-3">
                                     <label for="lokasi" class="form-label">Lokasi Penyimpanan *</label>
                                     <input type="text" class="form-control @error('lokasi') is-invalid @enderror"
-                                        id="lokasi" name="lokasi" value="{{ old('lokasi', $barang->lokasi) }}"
-                                        required>
+                                        id="lokasi" name="lokasi" value="{{ old('lokasi', $barang->lokasi) }}">
                                     @error('lokasi')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -143,34 +135,100 @@
                                 </div>
                             </div>
 
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="tahun_pengadaan" class="form-label">Tahun Pengadaan</label>
-                                    <input type="number"
-                                        class="form-control @error('tahun_pengadaan') is-invalid @enderror"
-                                        id="tahun_pengadaan" name="tahun_pengadaan"
-                                        value="{{ old('tahun_pengadaan', $barang->tahun_pengadaan) }}" min="2000"
-                                        max="{{ date('Y') }}">
-                                    @error('tahun_pengadaan')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+
+
+                            @if ($barang->gambar)
+                                <div class="col-md-6">
+                                    <label class="form-label">Gambar Saat Ini</label>
+                                    <div>
+                                        <img src="{{ asset('storage/' . $barang->gambar) }}"
+                                            alt="Gambar {{ $barang->nama }}" class="img-thumbnail"
+                                            style="max-height: 150px;">
+                                        <div class="form-check mt-2">
+                                            <input type="checkbox" class="form-check-input" id="hapus_gambar"
+                                                name="hapus_gambar">
+                                            <label class="form-check-label text-danger" for="hapus_gambar">
+                                                Hapus gambar saat ini
+                                            </label>
+                                        </div>
+                                    </div>
                                 </div>
-
-
-                            </div>
-
-                            <div class="d-flex justify-content-between mt-4">
-                                <a href="{{ route('barang.index') }}" class="btn btn-secondary">
-                                    <i class="bi bi-arrow-left me-1"></i> Kembali
-                                </a>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="bi bi-save me-1"></i> Update Barang
-                                </button>
-                            </div>
-                        </form>
+                            @endif
                     </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{{ route('barang.index') }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left me-1"></i> Kembali
+                        </a>
+                        <div>
+
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save me-1"></i> Update Barang
+                            </button>
+                        </div>
+                    </div>
+                    </form>
                 </div>
+
+                @push('scripts')
+                    <script>
+                        function resetForm() {
+                            if (confirm('Apakah Anda yakin ingin mengembalikan form ke nilai awal?')) {
+                                // Reset form ke nilai awal
+                                const form = document.querySelector('form');
+                                form.reset();
+
+
+
+                                document.getElementById('kategori').value = originalValues.kategori;
+                                document.getElementById('status').value = originalValues.status;
+                                document.getElementById('kondisi').value = originalValues.kondisi;
+                            }
+                        }
+
+                        // Validasi stok
+                        document.getElementById('stok').addEventListener('change', function() {
+                            if (this.value < 0) {
+                                alert('Stok tidak boleh negatif');
+                                this.value = 0;
+                            }
+                        });
+
+                        // Preview gambar sebelum upload
+                        document.getElementById('gambar').addEventListener('change', function(e) {
+                            const file = e.target.files[0];
+                            if (file) {
+                                const reader = new FileReader();
+                                reader.onload = function(e) {
+                                    // Create preview if doesn't exist
+                                    let preview = document.getElementById('image-preview');
+                                    if (!preview) {
+                                        preview = document.createElement('div');
+                                        preview.id = 'image-preview';
+                                        preview.className = 'mt-2';
+                                        document.getElementById('gambar').parentNode.appendChild(preview);
+                                    }
+
+                                    preview.innerHTML = `
+                    <div class="alert alert-info p-2">
+                        <small><i class="bi bi-info-circle me-1"></i> Preview gambar baru:</small>
+                        <div class="mt-2">
+                            <img src="${e.target.result}" class="img-thumbnail" style="max-height: 100px;">
+                            <div class="mt-1">
+                                <small>Nama: ${file.name}</small><br>
+                                <small>Ukuran: ${(file.size / 1024).toFixed(2)} KB</small>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                                };
+                                reader.readAsDataURL(file);
+                            }
+                        });
+                    </script>
+                @endpush
             </div>
         </div>
+    </div>
     </div>
 @endsection

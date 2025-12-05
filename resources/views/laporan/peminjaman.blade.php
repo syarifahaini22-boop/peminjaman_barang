@@ -8,15 +8,7 @@
             <h1 class="h3">
                 <i class="fas fa-hand-holding"></i> Laporan Peminjaman
             </h1>
-            <div class="btn-group">
-                <a href="{{ route('laporan.export.pdf', ['type' => 'peminjaman', 'start_date' => $start_date, 'end_date' => $end_date]) }}"
-                    class="btn btn-danger">
-                    <i class="fas fa-file-pdf"></i> Export PDF
-                </a>
-                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#printModal">
-                    <i class="fas fa-print"></i> Cetak
-                </button>
-            </div>
+
         </div>
 
         <!-- Filter Section -->
@@ -149,9 +141,7 @@
                     </table>
                 </div>
             </div>
-            <div class="card-footer text-muted">
-                <small>Dicetak pada: {{ now()->format('d/m/Y H:i:s') }}</small>
-            </div>
+
         </div>
     </div>
 

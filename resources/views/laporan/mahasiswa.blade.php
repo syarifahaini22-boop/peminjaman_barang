@@ -6,95 +6,11 @@
     <div class="container-fluid px-4 py-3">
         <!-- Page Header -->
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h2 class="h4 fw-bold text-dark mb-1">
-                    <i class="fas fa-users text-primary me-2"></i>Laporan Mahasiswa
-                </h2>
-                <p class="text-muted mb-0">Analisis aktivitas peminjaman oleh mahasiswa</p>
-            </div>
+
 
         </div>
 
-        <!-- Stats Cards -->
-        <div class="row mb-4">
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body p-4">
-                        <div class="d-flex align-items-center">
-                            <div class="icon-wrapper bg-primary bg-opacity-10 rounded-circle p-3 me-3">
-                                <i class="fas fa-user-graduate text-primary fs-4"></i>
-                            </div>
-                            <div>
-                                <h6 class="text-muted text-uppercase small mb-1">Total Mahasiswa</h6>
-                                <h3 class="fw-bold mb-0">{{ $mahasiswa->count() }}</h3>
-                                <small class="text-success">
-                                    <i class="fas fa-user-plus me-1"></i> Aktif
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body p-4">
-                        <div class="d-flex align-items-center">
-                            <div class="icon-wrapper bg-success bg-opacity-10 rounded-circle p-3 me-3">
-                                <i class="fas fa-hand-holding text-success fs-4"></i>
-                            </div>
-                            <div>
-                                <h6 class="text-muted text-uppercase small mb-1">Total Peminjaman</h6>
-                                <h3 class="fw-bold mb-0">{{ $mahasiswa->sum('total_peminjaman') }}</h3>
-                                <small class="text-success">
-                                    <i class="fas fa-chart-line me-1"></i>
-                                    {{ number_format($mahasiswa->avg('total_peminjaman'), 1) }} rata-rata
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body p-4">
-                        <div class="d-flex align-items-center">
-                            <div class="icon-wrapper bg-warning bg-opacity-10 rounded-circle p-3 me-3">
-                                <i class="fas fa-trophy text-warning fs-4"></i>
-                            </div>
-                            <div>
-                                <h6 class="text-muted text-uppercase small mb-1">Mahasiswa Teraktif</h6>
-                                <h3 class="fw-bold mb-0">{{ $topMahasiswa->first()->peminjaman_count ?? 0 }}</h3>
-                                <small class="text-warning">
-                                    <i class="fas fa-crown me-1"></i> {{ $topMahasiswa->first()->name ?? 'N/A' }}
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body p-4">
-                        <div class="d-flex align-items-center">
-                            <div class="icon-wrapper bg-info bg-opacity-10 rounded-circle p-3 me-3">
-                                <i class="fas fa-university text-info fs-4"></i>
-                            </div>
-                            <div>
-                                <h6 class="text-muted text-uppercase small mb-1">Jurusan Terbanyak</h6>
-                                <h3 class="fw-bold mb-0">{{ $jurusanStats->max('total') ?? 0 }}</h3>
-                                <small class="text-info">
-                                    <i class="fas fa-graduation-cap me-1"></i>
-                                    {{ $jurusanStats->sortByDesc('total')->first()->jurusan ?? 'N/A' }}
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <div class="row">
             <!-- Daftar Mahasiswa -->
@@ -299,8 +215,7 @@
                                                         'hilang' => 'dark',
                                                     ];
                                                 @endphp
-                                                <span
-                                                    class="badge bg-{{ $statusColors[$pinjam->status] ?? 'secondary' }}">
+                                                <span class="badge bg-{{ $statusColors[$pinjam->status] ?? 'secondary' }}">
                                                     {{ ucfirst($pinjam->status) }}
                                                 </span>
                                             </td>

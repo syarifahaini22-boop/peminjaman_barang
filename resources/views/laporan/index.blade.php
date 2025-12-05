@@ -6,108 +6,10 @@
     <div class="container-fluid px-4 py-3">
         <!-- Page Header -->
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <h2 class="h4 fw-bold text-dark mb-1">
-                    <i class="fas fa-chart-bar text-primary me-2"></i>Laporan & Statistik
-                </h2>
-                <p class="text-muted mb-0">Analisis data sistem peminjaman barang lab RSI</p>
-            </div>
-            <div>
-                <button class="btn btn-outline-primary me-2">
-                    <i class="fas fa-calendar me-1"></i> {{ date('d F Y') }}
-                </button>
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#filterModal">
-                    <i class="fas fa-filter me-1"></i> Filter
-                </button>
-            </div>
+
+
         </div>
 
-        <!-- Quick Stats -->
-        <div class="row mb-4">
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card border-0 shadow-sm stat-card primary">
-                    <div class="card-body p-4">
-                        <div class="d-flex align-items-center">
-                            <div class="icon-wrapper bg-primary bg-opacity-10 rounded-circle p-3 me-3">
-                                <i class="fas fa-box text-primary fs-4"></i>
-                            </div>
-                            <div>
-                                <h6 class="text-muted text-uppercase small mb-1">Total Barang</h6>
-                                <h3 class="fw-bold mb-0">{{ App\Models\Barang::count() }}</h3>
-                                <small class="text-success">
-                                    <i class="fas fa-arrow-up me-1"></i> 12% dari bulan lalu
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card border-0 shadow-sm stat-card success">
-                    <div class="card-body p-4">
-                        <div class="d-flex align-items-center">
-                            <div class="icon-wrapper bg-success bg-opacity-10 rounded-circle p-3 me-3">
-                                <i class="fas fa-users text-success fs-4"></i>
-                            </div>
-                            <div>
-                                <h6 class="text-muted text-uppercase small mb-1">Total Mahasiswa</h6>
-                                <h3 class="fw-bold mb-0">{{ App\Models\User::where('role', 'mahasiswa')->count() }}</h3>
-                                <small class="text-success">
-                                    <i class="fas fa-user-plus me-1"></i>
-                                    {{ App\Models\User::where('role', 'mahasiswa')->whereMonth('created_at', date('m'))->count() }}
-                                    baru
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card border-0 shadow-sm stat-card warning">
-                    <div class="card-body p-4">
-                        <div class="d-flex align-items-center">
-                            <div class="icon-wrapper bg-warning bg-opacity-10 rounded-circle p-3 me-3">
-                                <i class="fas fa-hand-holding text-warning fs-4"></i>
-                            </div>
-                            <div>
-                                <h6 class="text-muted text-uppercase small mb-1">Peminjaman Bulan Ini</h6>
-                                <h3 class="fw-bold mb-0">
-                                    {{ App\Models\Peminjaman::whereMonth('tanggal_peminjaman', date('m'))->count() }}</h3>
-                                <small class="text-warning">
-                                    <i class="fas fa-chart-line me-1"></i>
-                                    {{ number_format((App\Models\Peminjaman::whereMonth('tanggal_peminjaman', date('m'))->count() / max(App\Models\Peminjaman::whereMonth('tanggal_peminjaman', date('m', strtotime('-1 month')))->count(), 1)) * 100, 0) }}%
-                                    vs bulan lalu
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card border-0 shadow-sm stat-card info">
-                    <div class="card-body p-4">
-                        <div class="d-flex align-items-center">
-                            <div class="icon-wrapper bg-info bg-opacity-10 rounded-circle p-3 me-3">
-                                <i class="fas fa-undo text-info fs-4"></i>
-                            </div>
-                            <div>
-                                <h6 class="text-muted text-uppercase small mb-1">Pengembalian Bulan Ini</h6>
-                                <h3 class="fw-bold mb-0">
-                                    {{ App\Models\Peminjaman::whereMonth('tanggal_dikembalikan', date('m'))->count() }}</h3>
-                                <small class="text-info">
-                                    <i class="fas fa-check-circle me-1"></i>
-                                    {{ number_format((App\Models\Peminjaman::whereMonth('tanggal_dikembalikan', date('m'))->where('status', 'dikembalikan')->count() / max(App\Models\Peminjaman::whereMonth('tanggal_dikembalikan', date('m'))->count(), 1)) * 100, 0) }}%
-                                    tepat waktu
-                                </small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
 
         <!-- Laporan Menu Grid -->
@@ -243,45 +145,12 @@
                 </div>
             </div>
 
-            <!-- Statistik Card -->
-            <div class="col-xl-4 col-lg-6 mb-4">
-                <div class="card border-0 shadow-sm h-100 hover-card">
-                    <div class="card-header bg-white border-0 py-3 d-flex align-items-center">
-                        <div class="icon-wrapper bg-secondary bg-opacity-10 rounded-circle p-2 me-3">
-                            <i class="fas fa-chart-line text-secondary fs-5"></i>
-                        </div>
-                        <div>
-                            <h5 class="fw-bold mb-0">Dashboard Statistik</h5>
-                            <small class="text-muted">Visualisasi data lengkap</small>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <p class="card-text text-muted">Dashboard interaktif dengan berbagai grafik dan visualisasi data.
-                        </p>
-                        <div class="mb-3">
-                            <span class="badge bg-secondary bg-opacity-10 text-secondary me-2">Grafik Peminjaman</span>
-                            <span class="badge bg-secondary bg-opacity-10 text-secondary me-2">Pie Chart Kategori</span>
-                            <span class="badge bg-secondary bg-opacity-10 text-secondary">Top 5 Ranking</span>
-                        </div>
-                        <div class="d-flex align-items-center text-muted mb-3">
-                            <i class="fas fa-trophy me-2"></i>
-                            <small>Lihat ranking barang dan mahasiswa teraktif</small>
-                        </div>
-                    </div>
-                    <div class="card-footer bg-white border-0 pt-0">
-                        <button type="button" class="btn btn-secondary w-100" data-bs-toggle="modal"
-                            data-bs-target="#statistikModal">
-                            <i class="fas fa-chart-line me-2"></i>Lihat Dashboard
-                        </button>
-                    </div>
-                </div>
-            </div>
+
         </div>
     </div>
 
     <!-- Modal Statistik -->
-    <div class="modal fade" id="statistikModal" tabindex="-1" aria-labelledby="statistikModalLabel"
-        aria-hidden="true">
+    <div class="modal fade" id="statistikModal" tabindex="-1" aria-labelledby="statistikModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-xl">
             <div class="modal-content border-0 shadow-lg">
                 <div class="modal-header bg-primary text-white border-0">

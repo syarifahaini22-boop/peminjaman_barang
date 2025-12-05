@@ -197,24 +197,29 @@ class PeminjamanController extends Controller
                 ->with('error', 'Hanya peminjaman yang masih aktif dapat diupdate.');
         }
 
+        // Validasi dengan field yang sesuai dengan form
         $request->validate([
             'barang_id' => 'required|exists:barang,id',
             'mahasiswa_id' => 'required|exists:mahasiswa,id',
             'tanggal_peminjaman' => 'required|date',
             'tanggal_pengembalian' => 'required|date|after:tanggal_peminjaman',
-            'jumlah' => 'required|integer|min:1',
+            // HAPUS jumlah karena sudah tidak ada di form
+            // 'jumlah' => 'required|integer|min:1',
             'keterangan' => 'nullable|string',
         ]);
 
         try {
             DB::beginTransaction();
 
+            // Karena jumlah dihapus, kita asumsikan jumlah tetap 1
+            $jumlah = 1; // Default 1 karena form tidak punya field jumlah
+
             // Cek stok tersedia (kecuali barang yang sama)
             if ($request->barang_id != $peminjaman->barang_id) {
                 $barang = Barang::findOrFail($request->barang_id);
-                $stok_tersedia = $barang->stok_tersedia;
+                $stok_tersedia = $barang->stok; // Gunakan stok dari tabel barang
 
-                if ($request->jumlah > $stok_tersedia) {
+                if ($jumlah > $stok_tersedia) {
                     return back()->withErrors([
                         'jumlah' => 'Stok tidak mencukupi. Stok tersedia: ' . $stok_tersedia
                     ])->withInput();
@@ -222,22 +227,25 @@ class PeminjamanController extends Controller
             } else {
                 // Jika barang sama, hitung perubahan jumlah
                 $barang = Barang::findOrFail($request->barang_id);
-                $stok_tersedia = $barang->stok_tersedia + $peminjaman->jumlah; // kembalikan dulu jumlah sebelumnya
+                $stok_tersedia = $barang->stok; // Stok saat ini
 
-                if ($request->jumlah > $stok_tersedia) {
+                // Periksa apakah jumlah baru (default 1) lebih besar dari stok
+                if ($jumlah > $stok_tersedia) {
                     return back()->withErrors([
-                        'jumlah' => 'Stok tidak mencukupi. Stok tersedia: ' . ($stok_tersedia - $peminjaman->jumlah)
+                        'jumlah' => 'Stok tidak mencukupi. Stok tersedia: ' . $stok_tersedia
                     ])->withInput();
                 }
             }
 
+            // Update data - PERHATIKAN field yang diupdate!
             $peminjaman->update([
                 'barang_id' => $request->barang_id,
-                'mahasiswa_id' => $request->mahasiswa_id,
+                'user_id' => $request->mahasiswa_id, // Tabel peminjaman punya user_id, bukan mahasiswa_id
                 'tanggal_peminjaman' => $request->tanggal_peminjaman,
-                'tanggal_kembali' => $request->tanggal_kembali,
-                'jumlah' => $request->jumlah,
-                'keterangan' => $request->keterangan,
+                'tanggal_pengembalian' => $request->tanggal_pengembalian,
+                // Tidak update tanggal_kembali karena ini field untuk pengembalian aktual
+                // 'jumlah' => $jumlah, // Tidak ada field jumlah di tabel peminjaman
+                'catatan' => $request->keterangan, // Field di tabel adalah catatan
             ]);
 
             DB::commit();

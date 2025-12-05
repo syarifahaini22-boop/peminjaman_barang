@@ -189,48 +189,40 @@ class BarangController extends Controller
     /**
      * Update the specified resource in storage.
      */
+    // BarangController.php
     public function update(Request $request, Barang $barang)
     {
-        // Validasi - HAPUS 'merek' dan 'tahun_pengadaan' jika kolom tidak ada
+        // Debug: lihat data yang masuk
+        \Log::info('Update barang request:', $request->all());
+
+        // Validasi dengan field yang sesuai dengan database
         $validated = $request->validate([
-            'kode_barang' => 'required|max:50|unique:barang,kode_barang,' . $barang->id,
-            'nama' => 'required|max:255',
-            'kategori' => 'required|in:elektronik,alat_lab,buku,perlengkapan',
-            'deskripsi' => 'nullable',
-            // 'merek' => 'nullable|max:100', // HAPUS JIKA KOLOM TIDAK ADA
-            'status' => 'required|in:tersedia,dipinjam,rusak,maintenance',
-            'lokasi' => 'nullable|max:100', // Ubah required menjadi nullable
-            // 'kondisi' => 'required|in:baik,rusak_ringan,rusak_berat', // HAPUS JIKA KOLOM TIDAK ADA
-            // 'tahun_pengadaan' => 'nullable|digits:4|integer|min:2000|max:' . date('Y'), // HAPUS JIKA KOLOM TIDAK ADA
-            'gambar' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'kode_barang' => 'required|string|max:50|unique:barang,kode_barang,' . $barang->id,
+            'nama' => 'required|string|max:255', // Ganti 'nama_barang' menjadi 'nama'
+            'kategori' => 'required|string|in:elektronik,alat_lab,buku,perlengkapan',
+            'deskripsi' => 'nullable|string',
+            'lokasi' => 'required|string|max:100',
+            'status' => 'required|string|in:tersedia,dipinjam,rusak,maintenance',
+            'kondisi' => 'required|string|in:baik,rusak_ringan,rusak_berat',
+            'stok' => 'required|integer|min:0', // Tambahkan validasi stok
+            // HAPUS 'merek' dan 'tahun_pengadaan' karena tidak ada di tabel
         ]);
 
-        // HAPUS kolom yang tidak ada dari $validated
-        unset($validated['merek']);
-        unset($validated['kondisi']);
-        unset($validated['tahun_pengadaan']);
+        try {
+            // Update data
+            $barang->update($validated);
 
-        // Handle gambar upload
-        if ($request->hasFile('gambar')) {
-            // Hapus gambar lama jika ada
-            if ($barang->gambar && Storage::exists('public/' . $barang->gambar)) {
-                Storage::delete('public/' . $barang->gambar);
-            }
+            \Log::info('Barang updated successfully: ' . $barang->id);
 
-            $image = $request->file('gambar');
-            $imageName = time() . '_' . Str::slug($validated['nama']) . '.' . $image->getClientOriginalExtension();
-            $image->storeAs('public/barang', $imageName);
-            $validated['gambar'] = 'barang/' . $imageName;
-        } else {
-            // Keep existing gambar jika tidak diupdate
-            $validated['gambar'] = $barang->gambar;
+            return redirect()->route('barang.index')
+                ->with('success', 'Data barang berhasil diperbarui!');
+        } catch (\Exception $e) {
+            \Log::error('Update barang error: ' . $e->getMessage());
+
+            return back()
+                ->withInput()
+                ->with('error', 'Gagal memperbarui data: ' . $e->getMessage());
         }
-
-        // Update data
-        $barang->update($validated);
-
-        return redirect()->route('barang.index')
-            ->with('success', 'Data barang berhasil diperbarui!');
     }
 
 

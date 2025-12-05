@@ -17,15 +17,15 @@ class Barang extends Model
     protected $fillable = [
         'kode_barang',
         'nama',  // GANTI 'nama_barang' menjadi 'nama'
+        'kondisi',
         'kategori',
         'stok',
         'deskripsi',
+        'gambar',
         'merek',
         'status',
         'lokasi',
-        'kondisi',
         'tahun_pengadaan',
-        'gambar',
         'qr_code'
     ];
 

@@ -34,15 +34,8 @@
                                                 <button type="submit" class="btn btn-primary">
                                                     <i class="fas fa-filter"></i> Filter
                                                 </button>
-                                                <a href="{{ route('laporan.pengembalian') }}" class="btn btn-secondary">
-                                                    <i class="fas fa-redo"></i> Reset
-                                                </a>
-                                                @if ($pengembalian->count() > 0)
-                                                    <a href="{{ route('laporan.export.pdf', ['type' => 'pengembalian', 'start_date' => $start_date, 'end_date' => $end_date]) }}"
-                                                        class="btn btn-danger" target="_blank">
-                                                        <i class="fas fa-file-pdf"></i> PDF
-                                                    </a>
-                                                @endif
+
+
                                             </div>
                                         </div>
                                     </div>
@@ -50,41 +43,7 @@
                             </div>
                         </div>
 
-                        <!-- Statistik -->
-                        <div class="row mb-4">
-                            <div class="col-md-3">
-                                <div class="card bg-primary text-white">
-                                    <div class="card-body text-center">
-                                        <h6 class="card-title">Total Pengembalian</h6>
-                                        <h3 class="mb-0">{{ $stats['total'] }}</h3>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="card bg-success text-white">
-                                    <div class="card-body text-center">
-                                        <h6 class="card-title">Tepat Waktu</h6>
-                                        <h3 class="mb-0">{{ $stats['tepat_waktu'] }}</h3>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="card bg-warning text-white">
-                                    <div class="card-body text-center">
-                                        <h6 class="card-title">Terlambat</h6>
-                                        <h3 class="mb-0">{{ $stats['terlambat'] }}</h3>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="card bg-info text-white">
-                                    <div class="card-body text-center">
-                                        <h6 class="card-title">% Terlambat</h6>
-                                        <h3 class="mb-0">{{ $stats['persentase_terlambat'] }}%</h3>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+
 
                         <!-- Tabel Pengembalian -->
                         <div class="card">
@@ -151,13 +110,7 @@
                             </div>
                         </div>
 
-                        <!-- Periode Laporan -->
-                        <div class="mt-3 text-end">
-                            <small class="text-muted">
-                                Periode: {{ \Carbon\Carbon::parse($start_date)->format('d/m/Y') }} -
-                                {{ \Carbon\Carbon::parse($end_date)->format('d/m/Y') }}
-                            </small>
-                        </div>
+
                     </div>
                 </div>
             </div>
