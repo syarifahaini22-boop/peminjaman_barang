@@ -4,17 +4,7 @@
 @section('content')
     <div class="container-fluid">
         <!-- Page Header -->
-        <div class="navbar-custom mb-4">
-            <div>
-                <h2 class="h3 mb-1">
-                    <i class="bi bi-plus-circle me-2"></i> Tambah Barang Baru
-                </h2>
-                <p class="text-muted mb-0">Isi form berikut untuk menambahkan barang baru</p>
-            </div>
-            <a href="{{ route('barang.index') }}" class="btn btn-custom btn-custom-secondary">
-                <i class="bi bi-arrow-left me-1"></i> Kembali
-            </a>
-        </div>
+
 
         <!-- Form Create -->
         <div class="card card-custom">
@@ -149,20 +139,7 @@
                             @enderror
                         </div>
 
-                        <div class="col-md-4 mb-3">
-                            <label for="gambar" class="form-label form-label-custom">Gambar Barang</label>
-                            <input type="file"
-                                class="form-control form-control-custom @error('gambar') is-invalid @enderror"
-                                id="gambar" name="gambar" accept="image/*">
-                            @error('gambar')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                            <div class="mt-2">
-                                <small class="text-muted">
-                                    <i class="bi bi-info-circle me-1"></i> Format: JPG, PNG. Maks: 2MB
-                                </small>
-                            </div>
-                        </div>
+
                     </div>
 
                     <!-- Tombol Aksi -->

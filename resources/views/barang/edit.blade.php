@@ -156,21 +156,7 @@
                                     @enderror
                                 </div>
 
-                                <div class="col-md-6 mb-3">
-                                    <label for="gambar" class="form-label">Gambar Barang</label>
-                                    <input type="file" class="form-control @error('gambar') is-invalid @enderror"
-                                        id="gambar" name="gambar" accept="image/*">
-                                    @error('gambar')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                    @if ($barang->gambar)
-                                        <small class="text-muted d-block mt-1">
-                                            <i class="bi bi-image me-1"></i> Gambar saat ini:
-                                            <a href="{{ asset('storage/' . $barang->gambar) }}" target="_blank">Lihat</a>
-                                        </small>
-                                    @endif
-                                    <small class="text-muted">Format: JPG, PNG. Maks: 2MB</small>
-                                </div>
+
                             </div>
 
                             <div class="d-flex justify-content-between mt-4">

@@ -69,10 +69,7 @@
                                         <th>Mahasiswa</th>
                                         <td>{{ $peminjaman->mahasiswa->name }}</td>
                                     </tr>
-                                    <tr>
-                                        <th>Email</th>
-                                        <td>{{ $peminjaman->mahasiswa->email }}</td>
-                                    </tr>
+
                                     <tr>
                                         <th>Keterangan</th>
                                         <td>{{ $peminjaman->keterangan ?? '-' }}</td>
@@ -102,9 +99,7 @@
 
                             @if ($peminjaman->status == 'dipinjam')
                                 <div class="btn-group">
-                                    <a href="{{ route('peminjaman.edit', $peminjaman->id) }}" class="btn btn-warning">
-                                        <i class="fas fa-edit"></i> Edit
-                                    </a>
+
                                     <form action="{{ route('peminjaman.kembalikan', $peminjaman->id) }}" method="POST"
                                         class="d-inline">
                                         @csrf

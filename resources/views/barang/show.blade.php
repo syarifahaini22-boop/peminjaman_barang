@@ -11,14 +11,7 @@
                         <h4 class="card-title mb-0">
                             <i class="bi bi-box-seam me-2"></i> Detail Barang
                         </h4>
-                        <div class="btn-group">
-                            <a href="{{ route('barang.edit', $barang->id) }}" class="btn btn-warning btn-sm">
-                                <i class="bi bi-pencil me-1"></i> Edit
-                            </a>
-                            <a href="{{ route('barang.index') }}" class="btn btn-secondary btn-sm">
-                                <i class="bi bi-arrow-left me-1"></i> Kembali
-                            </a>
-                        </div>
+
                     </div>
                     <div class="card-body">
                         <div class="row">
@@ -144,36 +137,7 @@
                     </div>
                 </div>
 
-                <!-- Di bagian Aksi Cepat -->
-                <div class="card card-custom">
-                    <div class="card-header">
-                        <h6 class="card-title mb-0">
-                            <i class="bi bi-lightning-charge me-2"></i> Aksi Cepat
-                        </h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="d-grid gap-2">
-                            @if ($barang->status == 'tersedia')
-                            @endif
 
-                            <a href="{{ route('barang.edit', $barang->id) }}" class="btn btn-custom btn-custom-warning">
-                                <i class="bi bi-pencil me-2"></i> Edit Barang
-                            </a>
-
-                            @if ($barang->status != 'dipinjam')
-                                <form action="{{ route('barang.destroy', $barang->id) }}" method="POST"
-                                    onsubmit="return confirm('Hapus barang {{ $barang->nama_barang }}?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-custom btn-custom-danger w-100">
-                                        <i class="bi bi-trash me-2"></i> Hapus Barang
-                                    </button>
-                                </form>
-                            @endif
-
-                        </div>
-                    </div>
-                </div>
 
                 <!-- Informasi Status -->
                 <div class="row mt-4">
