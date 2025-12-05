@@ -60,7 +60,7 @@ class Peminjaman extends Model
     // Cek apakah terlambat
     public function getIsTerlambatAttribute()
     {
-        if ($this->status !== 'dikembalikan' && now()->gt($this->tanggal_kembali)) {
+        if ($this->status !== 'dikembalikan' && now()->gt($this->tanggal_pengembalian)) {
             return true;
         }
         return false;

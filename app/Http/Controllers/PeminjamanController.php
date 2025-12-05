@@ -174,7 +174,7 @@ class PeminjamanController extends Controller
         }
 
         $barang = Barang::all();
-        $mahasiswa = User::where('role', 'mahasiswa')->get();
+        $mahasiswa = Mahasiswa::get();
 
         // Kirim data tambahan untuk edit
         return view('peminjaman.edit', [
@@ -199,7 +199,7 @@ class PeminjamanController extends Controller
 
         $request->validate([
             'barang_id' => 'required|exists:barang,id',
-            'mahasiswa_id' => 'required|exists:users,id',
+            'mahasiswa_id' => 'required|exists:mahasiswa,id',
             'tanggal_peminjaman' => 'required|date',
             'tanggal_pengembalian' => 'required|date|after:tanggal_peminjaman',
             'jumlah' => 'required|integer|min:1',
@@ -293,7 +293,7 @@ class PeminjamanController extends Controller
             $status = 'dikembalikan';
 
             // Cek apakah terlambat
-            if ($tanggal_dikembalikan->gt($peminjaman->tanggal_kembali)) {
+            if ($tanggal_dikembalikan->gt($peminjaman->tanggal_pengembalian)) {
                 $status = 'terlambat';
             }
 

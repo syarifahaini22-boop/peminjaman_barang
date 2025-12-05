@@ -55,7 +55,7 @@
                     <div class="row g-3">
                         <div class="col-md-8">
                             <input type="text" name="keyword" class="form-control"
-                                placeholder="Cari nama, NIM, email, atau jurusan..." value="{{ $keyword }}">
+                                placeholder="Cari nama, NIM, atau jurusan..." value="{{ $keyword }}">
                         </div>
                         <div class="col-md-4">
                             <div class="d-grid gap-2 d-md-flex">
@@ -82,7 +82,7 @@
                                 <th>No</th>
                                 <th>NIM</th>
                                 <th>Nama</th>
-                                <th>Email</th>
+
                                 <th>Fakultas</th>
                                 <th>Jurusan</th>
                                 <th>No. HP</th>
@@ -96,25 +96,30 @@
                                     </td>
                                     <td><strong>{{ $item->nim }}</strong></td>
                                     <td>{{ $item->name }}</td>
-                                    <td>{{ $item->email }}</td>
+
                                     <td>{{ $item->fakultas }}</td>
                                     <td>{{ $item->jurusan }}</td>
                                     <td>{{ $item->no_hp ?? '-' }}</td>
                                     <td class="table-actions">
 
 
+                                        <i class="fas fa-eye"></i>
+                                        </a>
+
+                                        <!-- Tombol Edit -->
                                         <a href="{{ route('mahasiswa.edit', $item->id) }}" class="btn btn-sm btn-warning"
                                             title="Edit">
                                             <i class="fas fa-edit"></i>
                                         </a>
 
-                                        <!-- Contoh tombol hapus -->
+                                        <!-- Tombol Hapus -->
                                         <form action="/mahasiswa/{{ $item->id }}" method="POST"
-                                            onsubmit="return confirm('Yakin hapus mahasiswa ini?')">
+                                            onsubmit="return confirm('Yakin hapus mahasiswa ini?')"
+                                            style="margin: 0; display: inline;">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-danger btn-sm">
-                                                <i class="fas fa-trash"></i> Hapus
+                                            <button type="submit" class="btn btn-danger btn-sm" title="Hapus">
+                                                <i class="fas fa-trash"></i>
                                             </button>
                                         </form>
                                     </td>
