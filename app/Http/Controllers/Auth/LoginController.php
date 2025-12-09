@@ -44,4 +44,12 @@ class LoginController extends Controller
             'email' => 'Email atau password salah.',
         ])->onlyInput('email');
     }
+
+
+
+
+    public function showLoginForm()
+    {
+        return view('auth.simple-login');
+    }
 }

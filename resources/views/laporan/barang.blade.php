@@ -5,9 +5,7 @@
 @section('content')
     <div class="container-fluid">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="h3">
-                <i class="fas fa-box"></i> Laporan Barang
-            </h1>
+
 
         </div>
 
@@ -28,14 +26,7 @@
                                 @endforeach
                             </select>
                         </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Urutkan Berdasarkan</label>
-                            <select class="form-select" onchange="this.form.submit()">
-                                <option value="nama">Nama Barang</option>
-                                <option value="stok">Stok Terbanyak</option>
-                                <option value="peminjaman">Paling Sering Dipinjam</option>
-                            </select>
-                        </div>
+
                         <div class="col-md-4">
                             <label class="form-label">&nbsp;</label>
                             <div class="d-grid gap-2">

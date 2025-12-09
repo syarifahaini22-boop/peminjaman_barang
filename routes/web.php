@@ -16,6 +16,11 @@ Route::get('/', function () {
 // Auth routes
 Auth::routes();
 
+//login
+Route::get('/test-login', function () {
+    return view('auth.login');
+});
+
 // Dashboard (hanya untuk authenticated users)
 Route::get('/dashboard', [HomeController::class, 'index'])
     ->middleware('auth')

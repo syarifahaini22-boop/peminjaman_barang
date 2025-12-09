@@ -5,9 +5,7 @@
 @section('content')
     <div class="container-fluid">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="h3">
-                <i class="fas fa-hand-holding"></i> Laporan Peminjaman
-            </h1>
+
 
         </div>
 
@@ -145,40 +143,7 @@
         </div>
     </div>
 
-    <!-- Print Modal -->
-    <div class="modal fade" id="printModal" tabindex="-1" aria-labelledby="printModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="printModalLabel">
-                        <i class="fas fa-print"></i> Cetak Laporan
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <p>Pilih opsi cetak:</p>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="printOption" id="printAll" checked>
-                        <label class="form-check-label" for="printAll">
-                            Cetak semua data ({{ $peminjaman->count() }} baris)
-                        </label>
-                    </div>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="printOption" id="printSummary">
-                        <label class="form-check-label" for="printSummary">
-                            Cetak ringkasan saja
-                        </label>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="button" class="btn btn-primary" onclick="window.print()">
-                        <i class="fas fa-print"></i> Cetak
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+
 
     <style>
         @media print {
