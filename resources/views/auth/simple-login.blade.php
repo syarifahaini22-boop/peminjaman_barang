@@ -657,22 +657,6 @@
     </div>
 
     <div class="login-container">
-        <!-- Brand/Info Section -->
-        <div class="brand-section">
-            <div class="logo-container">
-                <div class="logo-circle">
-                    <i class="fas fa-flask"></i>
-                </div>
-                <h1 class="brand-title">LAB RSI</h1>
-                <p class="brand-subtitle">Research & System Innovation</p>
-                <p class="brand-text">
-                    Sistem manajemen peminjaman barang laboratorium dengan teknologi terdepan untuk mendukung penelitian
-                    dan inovasi.
-                </p>
-            </div>
-
-
-        </div>
 
         <!-- Login Form Section -->
         <div class="login-section">
@@ -707,7 +691,7 @@
                 @csrf
 
                 <div class="form-group">
-                    <label class="form-label">Email Institusi</label>
+                    <label class="form-label">Email</label>
                     <div class="input-group">
                         <i class="fas fa-user"></i>
                         <input type="email" name="email" class="form-input" placeholder="Masukkan Email Anda"
