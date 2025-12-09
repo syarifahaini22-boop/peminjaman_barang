@@ -715,7 +715,7 @@
 
                 <button type="submit" class="login-button" id="loginBtn">
                     <i class="fas fa-sign-in-alt"></i>
-                    <span>Masuk ke Sistem</span>
+                    <span>Masuk</span>
                     <div class="loading" id="loadingSpinner"></div>
                 </button>
             </form>
