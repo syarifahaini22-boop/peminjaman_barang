@@ -185,7 +185,6 @@
                                         <th>Tanggal</th>
                                         <th>Mahasiswa</th>
                                         <th>Barang</th>
-                                        <th>Jumlah</th>
                                         <th>Status</th>
                                         <th>Tanggal Kembali</th>
                                     </tr>
@@ -205,7 +204,7 @@
                                                 <small class="text-muted">{{ $pinjam->user->nim }}</small>
                                             </td>
                                             <td>{{ $pinjam->barang->nama }}</td>
-                                            <td>{{ $pinjam->jumlah }}</td>
+
                                             <td>
                                                 @php
                                                     $statusColors = [

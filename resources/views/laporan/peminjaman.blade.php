@@ -99,7 +99,6 @@
                                 <th>Mahasiswa</th>
                                 <th>Tanggal Pinjam</th>
                                 <th>Tanggal Kembali</th>
-                                <th>Jumlah</th>
                                 <th>Status</th>
                             </tr>
                         </thead>
@@ -112,7 +111,6 @@
                                     <td>{{ $item->mahasiswa->name }}</td>
                                     <td>{{ $item->tanggal_peminjaman->format('d/m/Y') }}</td>
                                     <td>{{ $item->tanggal_pengembalian->format('d/m/Y') }}</td>
-                                    <td class="text-center">{{ $item->jumlah }}</td>
                                     <td class="text-center">
                                         @if ($item->status == 'dipinjam')
                                             <span class="badge bg-warning">Dipinjam</span>
@@ -130,11 +128,7 @@
                             @endforelse
                         </tbody>
                         <tfoot>
-                            <tr class="table-light">
-                                <th colspan="6" class="text-end">Total Barang Dipinjam:</th>
-                                <th class="text-center">{{ $stats['total_barang'] }}</th>
-                                <th></th>
-                            </tr>
+
                         </tfoot>
                     </table>
                 </div>
