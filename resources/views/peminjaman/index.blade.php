@@ -4,7 +4,9 @@
 @section('content')
     <div class="container-fluid">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="h4">Data Peminjaman Barang</h2>
+            <div>
+
+            </div>
             <a href="{{ route('peminjaman.create') }}" class="btn btn-primary">
                 <i class="bi bi-plus-circle"></i> Peminjaman Baru
             </a>

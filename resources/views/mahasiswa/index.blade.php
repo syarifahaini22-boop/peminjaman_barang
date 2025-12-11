@@ -6,11 +6,11 @@
     <div class="container-fluid">
         <!-- Header dengan tombol tambah -->
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="h3">
-                <i class="fas fa-users"></i> Data Mahasiswa
-            </h1>
-            <a href="{{ route('mahasiswa.create') }}" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Tambah Mahasiswa
+            <div>
+
+            </div>
+            <a href="{{ route('peminjaman.create') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Tambah Mahasiswa
             </a>
         </div>
 
@@ -62,9 +62,7 @@
                                 <button type="submit" class="btn btn-primary">
                                     <i class="fas fa-search"></i> Cari
                                 </button>
-                                <a href="{{ route('mahasiswa.index') }}" class="btn btn-secondary">
-                                    <i class="fas fa-redo"></i> Reset
-                                </a>
+
                             </div>
                         </div>
                     </div>

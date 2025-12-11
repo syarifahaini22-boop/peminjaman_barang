@@ -408,6 +408,12 @@
                                 <i class="bi bi-file-earmark-text me-2"></i> Laporan
                             </a>
                         </li>
+                        <li class="nav-item mb-2">
+                            <a class="nav-link {{ request()->routeIs('admin.*') ? 'active' : '' }}"
+                                href="{{ route('admin.manage') }}">
+                                <i class="bi bi-person-gear me-2"></i> Manajemen Admin
+                            </a>
+                        </li>
                         <li class="nav-item mt-4 pt-3 border-top">
                             <a class="nav-link" href="{{ route('logout') }}"
                                 onclick="event.preventDefault(); document.getElementById('logout-form').submit();">

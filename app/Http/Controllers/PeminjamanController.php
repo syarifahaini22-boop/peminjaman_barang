@@ -85,69 +85,59 @@ class PeminjamanController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'barang_id' => 'required|exists:barang,id',
-            'mahasiswa_id' => 'required|exists:mahasiswa,id', // VALIDASI KE MAHASISWA
+            'mahasiswa_id' => 'required|exists:mahasiswa,id',
             'tanggal_peminjaman' => 'required|date',
-            'tanggal_pengembalian' => 'required|date|after:tanggal_peminjaman',
-            'tujuan_peminjaman' => 'required|string|max:255',
-            'lokasi_penggunaan' => 'nullable|string|max:100',
-            'dosen_pengampu' => 'nullable|string|max:100',
-            'catatan' => 'nullable|string',
-        ], [
-            'mahasiswa_id.exists' => 'Mahasiswa yang dipilih tidak ditemukan',
-            'barang_id.exists' => 'Barang yang dipilih tidak ditemukan',
-            'tanggal_pengembalian.after' => 'Tanggal pengembalian harus setelah tanggal peminjaman',
+            'tanggal_pengembalian' => 'required|date|after_or_equal:tanggal_peminjaman',
+            'tujuan_peminjaman' => 'required|string',
+            'barang_ids' => 'required|array|min:1',
+            'barang_ids.*' => 'exists:barang,id',
+            'barang.*.jumlah' => 'required|integer|min:1'
         ]);
 
+        \DB::beginTransaction();
+
         try {
-            DB::beginTransaction();
-
-            // Cek apakah barang tersedia
-            $barang = Barang::findOrFail($request->barang_id);
-
-            // Cek stok barang
-            if ($barang->stok < 1) {
-                return back()->withErrors([
-                    'barang_id' => 'Barang tidak tersedia untuk dipinjam. Stok habis.'
-                ])->withInput();
-            }
-
-            // Generate kode peminjaman
-            $kode_peminjaman = 'PINJ-' . date('Ymd') . '-' . str_pad(Peminjaman::count() + 1, 4, '0', STR_PAD_LEFT);
-
-            // Buat peminjaman - user_id adalah id dari mahasiswa
+            // Buat peminjaman
             $peminjaman = Peminjaman::create([
-                'barang_id' => $request->barang_id,
-                'user_id' => $request->mahasiswa_id, // INI ADALAH ID DARI MAHASISWA
-                'kode_peminjaman' => $kode_peminjaman,
+                'kode_peminjaman' => $request->kode_peminjaman,
+                'mahasiswa_id' => $request->mahasiswa_id,
                 'tanggal_peminjaman' => $request->tanggal_peminjaman,
                 'tanggal_pengembalian' => $request->tanggal_pengembalian,
-                'tanggal_dikembalikan' => null,
-                'status' => 'dipinjam',
                 'tujuan_peminjaman' => $request->tujuan_peminjaman,
                 'lokasi_penggunaan' => $request->lokasi_penggunaan,
-                'dosen_pengampu' => $request->dosen_pengampu,
                 'catatan' => $request->catatan,
-                'kondisi_kembali' => null,
-                'catatan_kembali' => null,
+                'status' => 'dipinjam'
             ]);
 
-            DB::commit();
+            // Tambah barang yang dipinjam
+            foreach ($request->barang_ids as $barangId) {
+                $jumlah = $request->input("barang.{$barangId}.jumlah", 1);
+
+                $peminjaman->barang()->attach($barangId, [
+                    'jumlah' => $jumlah,
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+
+                // Update status barang jika perlu
+                $barang = Barang::find($barangId);
+                if ($barang) {
+                    // Jika stok berkurang menjadi 0, ubah status
+                    if ($barang->stok_tersedia <= $jumlah) {
+                        $barang->update(['status' => 'dipinjam']);
+                    }
+                }
+            }
+
+            \DB::commit();
 
             return redirect()->route('peminjaman.index')
-                ->with('success', 'Peminjaman berhasil dibuat. Kode: ' . $kode_peminjaman);
+                ->with('success', 'Peminjaman berhasil dibuat!');
         } catch (\Exception $e) {
-            DB::rollBack();
+            \DB::rollBack();
 
-            // Debug error lebih detail
-            \Log::error('Error menyimpan peminjaman: ' . $e->getMessage(), [
-                'request' => $request->all(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return back()
-                ->withInput()
-                ->withErrors(['error' => 'Gagal menyimpan peminjaman: ' . $e->getMessage()]);
+            return back()->withInput()
+                ->with('error', 'Gagal membuat peminjaman: ' . $e->getMessage());
         }
     }
 

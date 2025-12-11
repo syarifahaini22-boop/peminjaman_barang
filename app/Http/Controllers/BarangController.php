@@ -15,7 +15,8 @@ class BarangController extends Controller
     public function index(Request $request)
     {
         // Query dasar dengan eager loading
-        $query = Barang::with('peminjamanAktif');
+        $query = Barang::with('peminjamanAktif')
+            ->whereNull('deleted_at');
 
         // ===== SEARCH MULTI COLUMN =====
         if ($request->has('search') && !empty($request->search)) {
@@ -83,7 +84,7 @@ class BarangController extends Controller
 
         // ===== STATISTIK =====
         $stats = [
-            'total' => Barang::count(),
+            'total' => Barang::whereNull('deleted_at')->count(),
             'tersedia' => Barang::where('status', 'tersedia')->count(),
             'dipinjam' => Barang::where('status', 'dipinjam')->count(),
             'elektronik' => Barang::where('kategori', 'elektronik')->count(),
@@ -232,23 +233,152 @@ class BarangController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Barang $barang)
+    public function destroy($id)
     {
-        // Cek apakah barang sedang dipinjam
-        if ($barang->status == 'dipinjam') {
+        \DB::beginTransaction();
+
+        try {
+            \Log::info("===== START HARD DELETE BARANG ID: {$id} =====");
+
+            // 1. Cari barang TANPA menggunakan SoftDeletes scope
+            $barang = \DB::table('barang')->where('id', $id)->first();
+
+            if (!$barang) {
+                \Log::warning("Barang dengan ID {$id} tidak ditemukan di database");
+                return redirect()->route('barang.index')
+                    ->with('error', 'Barang tidak ditemukan!');
+            }
+
+            \Log::info("Barang ditemukan:", [
+                'id' => $barang->id,
+                'nama' => $barang->nama,
+                'gambar' => $barang->gambar
+            ]);
+
+            // 2. Hapus file gambar jika ada
+            if ($barang->gambar && $barang->gambar !== 'NULL' && !empty(trim($barang->gambar))) {
+                $gambarPath = $barang->gambar;
+
+                // Normalisasi path
+                if (strpos($gambarPath, 'barang/') === 0) {
+                    $gambarPath = substr($gambarPath, 7);
+                }
+
+                \Log::info("Mencoba hapus gambar: " . $gambarPath);
+
+                $fullPath = 'public/barang/' . $gambarPath;
+                if (Storage::exists($fullPath)) {
+                    Storage::delete($fullPath);
+                    \Log::info("File gambar berhasil dihapus: " . $fullPath);
+                } else {
+                    \Log::warning("File tidak ditemukan: " . $fullPath);
+
+                    // Coba path lain
+                    $alternatePath = 'public/' . $barang->gambar;
+                    if (Storage::exists($alternatePath)) {
+                        Storage::delete($alternatePath);
+                        \Log::info("File gambar berhasil dihapus (alternate): " . $alternatePath);
+                    }
+                }
+            }
+
+            // 3. HAPUS PERMANEN DARI DATABASE dengan query langsung
+            $deleted = \DB::table('barang')->where('id', $id)->delete();
+
+            if ($deleted) {
+                \Log::info("SUKSES: Barang berhasil dihapus dari database. Row affected: {$deleted}");
+            } else {
+                \Log::error("GAGAL: Tidak ada row yang terhapus dari database");
+            }
+
+            \DB::commit();
+
+            \Log::info("===== END HARD DELETE =====");
+
             return redirect()->route('barang.index')
-                ->with('error', 'Barang sedang dipinjam, tidak dapat dihapus!');
+                ->with('success', 'Barang berhasil dihapus permanen!');
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            \Log::error("ERROR saat menghapus barang: " . $e->getMessage());
+            \Log::error($e->getTraceAsString());
+
+            return redirect()->route('barang.index')
+                ->with('error', 'Gagal menghapus barang: ' . $e->getMessage());
+        }
+    }
+
+
+    public function hardDelete($id)
+    {
+        try {
+            // Nonaktifkan SoftDeletes sementara
+            Barang::withoutGlobalScope('Illuminate\Database\Eloquent\SoftDeletingScope')
+                ->find($id)
+                ->forceDelete();
+
+            return redirect()->route('barang.index')
+                ->with('success', 'Barang berhasil dihapus permanen!');
+        } catch (\Exception $e) {
+            return redirect()->route('barang.index')
+                ->with('error', 'Gagal menghapus: ' . $e->getMessage());
+        }
+    }
+
+
+    public function checkDatabase()
+    {
+        echo "<h2>CEK DATABASE BARANG</h2>";
+
+        // 1. Cek semua data
+        $all = \DB::select('SELECT * FROM barang');
+        echo "Total data di tabel barang: " . count($all) . "<br><br>";
+
+        // 2. Cek struktur tabel
+        echo "<h3>Struktur Tabel:</h3>";
+        $structure = \DB::select("DESCRIBE barang");
+        foreach ($structure as $col) {
+            echo "{$col->Field} | {$col->Type} | {$col->Null} | {$col->Key}<br>";
         }
 
-        // Hapus gambar jika ada
-        if ($barang->gambar && Storage::exists('public/' . $barang->gambar)) {
-            Storage::delete('public/' . $barang->gambar);
+        // 3. Cek data per ID
+        echo "<h3>Data per ID:</h3>";
+        foreach ($all as $row) {
+            echo "ID: {$row->id} | Nama: {$row->nama} | Deleted At: {$row->deleted_at}<br>";
         }
 
-        // Soft delete
-        $barang->delete();
+        die();
+    }
 
-        return redirect()->route('barang.index')
-            ->with('success', 'Barang berhasil dihapus!');
+
+
+
+    public function searchByKode(Request $request)
+    {
+        $kode = $request->get('kode_barang');
+
+        $barang = Barang::where('kode_barang', $kode)
+            ->where('status', 'tersedia')
+            ->whereNull('deleted_at')
+            ->first();
+
+        if ($barang) {
+            // Hitung stok tersedia
+            $stokTersedia = $barang->stok_tersedia ?? $barang->stok;
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'id' => $barang->id,
+                    'kode_barang' => $barang->kode_barang,
+                    'nama' => $barang->nama,
+                    'stok_tersedia' => $stokTersedia
+                ]
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Barang tidak ditemukan atau tidak tersedia'
+        ]);
     }
 }

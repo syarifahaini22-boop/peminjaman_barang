@@ -7,6 +7,7 @@ use App\Http\Controllers\MahasiswaController;
 use App\Http\Controllers\PeminjamanController;
 use App\Http\Controllers\BarangController;
 use App\Http\Controllers\LaporanController;
+use App\Http\Controllers\AdminController;
 
 // Redirect root ke login
 Route::get('/', function () {
@@ -28,8 +29,29 @@ Route::get('/dashboard', [HomeController::class, 'index'])
 
 // Semua route harus dalam auth
 Route::middleware(['auth'])->group(function () {
+
+    // Di dalam middleware auth, tambahkan:
+
+    // Pastikan Anda punya ini:
+    Route::prefix('admin')->name('admin.')->group(function () {
+        Route::get('/manage', [AdminController::class, 'index'])->name('manage');
+        Route::post('/store', [AdminController::class, 'store'])->name('store');
+        Route::put('/{id}', [AdminController::class, 'update'])->name('update');
+        Route::delete('/{id}', [AdminController::class, 'destroy'])->name('destroy');
+
+        // TAMBAHKAN INI untuk verifikasi
+        Route::post('/{id}/verify', [AdminController::class, 'verify'])->name('verify');
+    });
+
+
+
+
+
     // CRUD Mahasiswa
     Route::resource('mahasiswa', MahasiswaController::class);
+    // Route untuk pencarian
+    Route::get('/mahasiswa/search', [MahasiswaController::class, 'searchByNim'])->name('mahasiswa.searchByNim');
+    Route::get('/barang/search', [BarangController::class, 'searchByKode'])->name('barang.searchByKode');
 
     // Barang CRUD
     Route::resource('barang', BarangController::class);
@@ -40,6 +62,10 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/barang/{id}/force-delete', [BarangController::class, 'forceDelete'])->name('barang.force-delete');
     Route::post('/barang/restore-all', [BarangController::class, 'restoreAll'])->name('barang.restore-all');
     Route::post('/barang/empty-trash', [BarangController::class, 'emptyTrash'])->name('barang.empty-trash');
+    // Route untuk hard delete
+    Route::delete('/barang/{id}/hard-delete', [BarangController::class, 'hardDelete'])
+        ->name('barang.hardDelete');
+    Route::get('/check-db', [BarangController::class, 'checkDatabase']);
 
     // Peminjaman
     Route::resource('peminjaman', App\Http\Controllers\PeminjamanController::class);

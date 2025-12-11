@@ -4,13 +4,12 @@
 @section('content')
     <div class="container-fluid">
         <!-- Page Header dengan Tombol Tambah -->
-        <div class="navbar-custom">
+        <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
-                <h2 class="h3 mb-1">Data Barang</h2>
-                <p class="text-muted mb-0">Manajemen inventaris barang Lab RSI</p>
+
             </div>
-            <a href="{{ route('barang.create') }}" class="btn btn-custom btn-custom-primary">
-                <i class="bi bi-plus-circle me-2"></i> Tambah Barang
+            <a href="{{ route('peminjaman.create') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Tambah Barang
             </a>
         </div>
 

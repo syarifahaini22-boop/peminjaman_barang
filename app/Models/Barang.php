@@ -9,7 +9,7 @@ use App\Models\Peminjaman;
 
 class Barang extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
 
     // Tentukan nama tabel secara eksplisit
     protected $table = 'barang';
@@ -75,11 +75,11 @@ class Barang extends Model
 
 
 
+    // app/Models/Barang.php
     public function peminjamanAktif()
     {
-        return $this->hasOne(Peminjaman::class)
-            ->where('status', 'dipinjam')
-            ->latest(); // ambil yang terbaru
+        // Contoh relationship (sesuaikan dengan model Anda)
+        return $this->hasOne(Peminjaman::class)->where('status', 'aktif');
     }
 
 
