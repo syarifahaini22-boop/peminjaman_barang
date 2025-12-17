@@ -3,9 +3,6 @@
 @section('title', 'Tambah Barang Baru')
 @section('content')
     <div class="container-fluid">
-        <!-- Page Header -->
-
-
         <!-- Form Create -->
         <div class="card card-custom">
             <div class="card-header card-header-custom">
@@ -84,7 +81,20 @@
                         </div>
                     </div>
 
+                    <!-- BARIS BARU: TAMBAHKAN FIELD STOK -->
                     <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="stok" class="form-label form-label-custom">Stok *</label>
+                            <input type="number"
+                                class="form-control form-control-custom @error('stok') is-invalid @enderror" id="stok"
+                                name="stok" value="{{ old('stok', 1) }}" required min="0" step="1"
+                                placeholder="Jumlah stok barang">
+                            @error('stok')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            <small class="text-muted">Jumlah total barang yang tersedia</small>
+                        </div>
+
                         <div class="col-md-4 mb-3">
                             <label for="status" class="form-label form-label-custom">Status *</label>
                             <select class="form-select form-control-custom @error('status') is-invalid @enderror"
@@ -116,8 +126,10 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
+                    </div>
 
-                        <div class="col-md-4 mb-3">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
                             <label for="tahun_pengadaan" class="form-label form-label-custom">Tahun Pengadaan</label>
                             <input type="number"
                                 class="form-control form-control-custom @error('tahun_pengadaan') is-invalid @enderror"
@@ -127,11 +139,9 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
+
+
                     </div>
-
-
-
-
             </div>
 
             <!-- Tombol Aksi -->

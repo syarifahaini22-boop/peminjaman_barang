@@ -8,7 +8,7 @@
             <div>
 
             </div>
-            <a href="{{ route('peminjaman.create') }}" class="btn btn-primary">
+            <a href="{{ route('barang.create') }}" class="btn btn-primary">
                 <i class="bi bi-plus-circle"></i> Tambah Barang
             </a>
         </div>

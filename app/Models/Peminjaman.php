@@ -12,8 +12,7 @@ class Peminjaman extends Model
     protected $table = 'peminjaman';
 
     protected $fillable = [
-        'barang_id',
-        'user_id', // Bukan mahasiswa_id
+        'user_id',
         'kode_peminjaman',
         'tanggal_peminjaman',
         'tanggal_pengembalian',
@@ -25,6 +24,7 @@ class Peminjaman extends Model
         'catatan',
         'kondisi_kembali',
         'catatan_kembali',
+        // HAPUS 'barang_id' dari sini
     ];
 
     protected $casts = [
@@ -33,11 +33,15 @@ class Peminjaman extends Model
         'tanggal_dikembalikan' => 'date',
     ];
 
-    // Relasi ke Barang
+    // Relasi ke Barang (Many-to-Many dengan pivot)
     public function barang()
     {
-        return $this->belongsTo(Barang::class);
+        return $this->belongsToMany(Barang::class, 'peminjaman_barang')
+            ->withPivot('jumlah')
+            ->withTimestamps();
     }
+
+    // Relasi ke User/Mahasiswa
     public function user()
     {
         return $this->belongsTo(Mahasiswa::class, 'user_id');
@@ -66,9 +70,7 @@ class Peminjaman extends Model
         return false;
     }
 
-
-
-    // TAMBAHKAN accessor untuk kompatibilitas
+    // Accessor untuk kompatibilitas
     public function getMahasiswaIdAttribute()
     {
         return $this->user_id;
@@ -77,5 +79,11 @@ class Peminjaman extends Model
     public function setMahasiswaIdAttribute($value)
     {
         $this->attributes['user_id'] = $value;
+    }
+
+    // Helper untuk mendapatkan total jumlah barang
+    public function getTotalJumlahAttribute()
+    {
+        return $this->barang->sum('pivot.jumlah');
     }
 }

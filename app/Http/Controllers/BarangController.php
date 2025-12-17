@@ -108,13 +108,25 @@ class BarangController extends Controller
     /**
      * Show the form for creating a new resource.
      */
+    /**
+     * Show the form for creating a new resource.
+     */
     public function create()
     {
+        \Log::info('BarangController@create accessed');
+
         $kategori = ['elektronik', 'alat_lab', 'buku', 'perlengkapan'];
         $status = ['tersedia', 'dipinjam', 'rusak', 'maintenance'];
         $kondisi = ['baik', 'rusak_ringan', 'rusak_berat'];
 
-        return view('barang.create', compact('kategori', 'status', 'kondisi'));
+        // Set default values untuk form
+        $defaultValues = [
+            'stok' => 1, // Default stok 1
+            'status' => 'tersedia', // Default status tersedia
+            'kondisi' => 'baik', // Default kondisi baik
+        ];
+
+        return view('barang.create', compact('kategori', 'status', 'kondisi', 'defaultValues'));
     }
 
 
@@ -125,26 +137,31 @@ class BarangController extends Controller
      */
     public function store(Request $request)
     {
-        // Hanya validasi kolom yang ADA di database
+        // Validasi TANPA kolom yang belum ada di database
         $validated = $request->validate([
             'kode_barang' => 'required|unique:barang,kode_barang|max:50',
-            'nama' => 'required|max:255', // Kolom ini ADA di database
+            'nama' => 'required|max:255',
             'kategori' => 'required',
-            'lokasi' => 'nullable',
+            'stok' => 'required|integer|min:0',
+            'status' => 'required|in:tersedia,dipinjam,rusak,maintenance',
+            'kondisi' => 'required|in:baik,rusak_ringan,rusak_berat',
+            'lokasi' => 'nullable|max:100',
             'deskripsi' => 'nullable',
             'gambar' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-            // HAPUS validasi untuk kolom yang BELUM ADA di database
+            // HAPUS validasi untuk 'merek' dan 'tahun_pengadaan' karena belum ada
         ]);
 
-        // Hanya ambil field yang ADA di database
+        // Siapkan data HANYA dengan kolom yang ADA di database
         $dataToSave = [
             'kode_barang' => $validated['kode_barang'],
             'nama' => $validated['nama'],
             'kategori' => $validated['kategori'],
+            'stok' => $validated['stok'],
+            'status' => $validated['status'],
+            'kondisi' => $validated['kondisi'],
             'lokasi' => $validated['lokasi'] ?? null,
             'deskripsi' => $validated['deskripsi'] ?? null,
-            // TAMBAHKAN DEFAULT VALUE UNTUK KOLOM YANG BELUM ADA
-            'stok' => 0, // Default stok 0
+            // HAPUS 'merek' dan 'tahun_pengadaan' dari sini karena kolom tidak ada
         ];
 
         // Handle gambar upload
@@ -155,7 +172,10 @@ class BarangController extends Controller
             $dataToSave['gambar'] = 'barang/' . $imageName;
         }
 
-        // Simpan data HANYA dengan kolom yang ada
+        // Debug: lihat data yang akan disimpan
+        \Log::info('Data to save:', $dataToSave);
+
+        // Simpan data ke database
         Barang::create($dataToSave);
 
         return redirect()->route('barang.index')
@@ -190,22 +210,21 @@ class BarangController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    // BarangController.php
     public function update(Request $request, Barang $barang)
     {
         // Debug: lihat data yang masuk
         \Log::info('Update barang request:', $request->all());
 
-        // Validasi dengan field yang sesuai dengan database
+        // Validasi HANYA dengan field yang ADA di database
         $validated = $request->validate([
             'kode_barang' => 'required|string|max:50|unique:barang,kode_barang,' . $barang->id,
-            'nama' => 'required|string|max:255', // Ganti 'nama_barang' menjadi 'nama'
+            'nama' => 'required|string|max:255',
             'kategori' => 'required|string|in:elektronik,alat_lab,buku,perlengkapan',
             'deskripsi' => 'nullable|string',
             'lokasi' => 'required|string|max:100',
             'status' => 'required|string|in:tersedia,dipinjam,rusak,maintenance',
             'kondisi' => 'required|string|in:baik,rusak_ringan,rusak_berat',
-            'stok' => 'required|integer|min:0', // Tambahkan validasi stok
+            'stok' => 'required|integer|min:0',
             // HAPUS 'merek' dan 'tahun_pengadaan' karena tidak ada di tabel
         ]);
 

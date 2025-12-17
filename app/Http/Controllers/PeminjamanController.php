@@ -5,9 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Peminjaman;
 use App\Models\Barang;
 use App\Models\Mahasiswa;
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Carbon\Carbon;
 
 class PeminjamanController extends Controller
@@ -22,8 +22,7 @@ class PeminjamanController extends Controller
         $start_date = $request->get('start_date', '');
         $end_date = $request->get('end_date', '');
 
-        $query = Peminjaman::with(['barang', 'mahasiswa'])
-            ->latest();
+        $query = Peminjaman::with(['barang', 'mahasiswa']);
 
         // Filter keyword
         if ($keyword) {
@@ -52,55 +51,80 @@ class PeminjamanController extends Controller
             $query->whereDate('tanggal_peminjaman', '<=', $end_date);
         }
 
-        $riwayat = $query->paginate(10);
+        $riwayat = $query->latest()->paginate(10);
 
         return view('peminjaman.index', compact('riwayat', 'status', 'keyword', 'start_date', 'end_date'));
     }
-
 
     /**
      * Show the form for creating a new resource.
      */
     public function create()
     {
-        // Tetap ambil barang (tanpa filter stok sementara)
-        $barang = Barang::all();
+        $barang = Barang::where('status', 'tersedia')->get();
+        $mahasiswa = Mahasiswa::all();
 
-        // Ambil MAHASISWA untuk dipinjamkan barang (INI BENAR)
-        $mahasiswa = Mahasiswa::get();
-
-        $kode_peminjaman = 'PINJ-' . date('Ymd') . '-' . str_pad(Peminjaman::count() + 1, 4, '0', STR_PAD_LEFT);
+        // Generate kode peminjaman yang UNIK
+        $kode_peminjaman = $this->generateKodePeminjaman();
 
         return view('peminjaman.create', compact('barang', 'mahasiswa', 'kode_peminjaman'));
     }
 
+    /**
+     * Generate kode peminjaman unik
+     */
+    private function generateKodePeminjaman()
+    {
+        do {
+            $date = date('Ymd');
+            $random = strtoupper(Str::random(4));
+            $kode = "PINJ-{$date}-{$random}";
 
+            // Cek apakah kode sudah ada
+            $exists = Peminjaman::where('kode_peminjaman', $kode)->exists();
+        } while ($exists);
 
-
+        return $kode;
+    }
 
     /**
      * Store a newly created resource in storage.
      */
-    // Di method store():
     public function store(Request $request)
     {
+        \Log::info('Store peminjaman request:', $request->all());
+
+        // Generate kode peminjaman JIKA tidak ada di request
+        if (empty($request->kode_peminjaman)) {
+            $kodePeminjaman = $this->generateKodePeminjaman();
+        } else {
+            $kodePeminjaman = $request->kode_peminjaman;
+        }
+
         $request->validate([
             'mahasiswa_id' => 'required|exists:mahasiswa,id',
             'tanggal_peminjaman' => 'required|date',
             'tanggal_pengembalian' => 'required|date|after_or_equal:tanggal_peminjaman',
-            'tujuan_peminjaman' => 'required|string',
+            'tujuan_peminjaman' => 'required|string|max:255',
+            'lokasi_penggunaan' => 'nullable|string|max:255',
+            'catatan' => 'nullable|string',
             'barang_ids' => 'required|array|min:1',
             'barang_ids.*' => 'exists:barang,id',
             'barang.*.jumlah' => 'required|integer|min:1'
         ]);
 
-        \DB::beginTransaction();
+        DB::beginTransaction();
 
         try {
+            // Pastikan kode_peminjaman tidak kosong
+            if (empty($kodePeminjaman)) {
+                throw new \Exception('Kode peminjaman tidak boleh kosong');
+            }
+
             // Buat peminjaman
             $peminjaman = Peminjaman::create([
-                'kode_peminjaman' => $request->kode_peminjaman,
-                'mahasiswa_id' => $request->mahasiswa_id,
+                'kode_peminjaman' => $kodePeminjaman, // PASTIKAN ini ada nilai
+                'user_id' => $request->mahasiswa_id,
                 'tanggal_peminjaman' => $request->tanggal_peminjaman,
                 'tanggal_pengembalian' => $request->tanggal_pengembalian,
                 'tujuan_peminjaman' => $request->tujuan_peminjaman,
@@ -109,40 +133,50 @@ class PeminjamanController extends Controller
                 'status' => 'dipinjam'
             ]);
 
-            // Tambah barang yang dipinjam
+            \Log::info('Peminjaman created:', [
+                'id' => $peminjaman->id,
+                'kode' => $peminjaman->kode_peminjaman
+            ]);
+
+            // Tambah barang yang dipinjam ke tabel pivot
             foreach ($request->barang_ids as $barangId) {
                 $jumlah = $request->input("barang.{$barangId}.jumlah", 1);
 
-                $peminjaman->barang()->attach($barangId, [
-                    'jumlah' => $jumlah,
-                    'created_at' => now(),
-                    'updated_at' => now()
-                ]);
+                // Validasi stok tersedia
+                $barang = Barang::findOrFail($barangId);
 
-                // Update status barang jika perlu
-                $barang = Barang::find($barangId);
-                if ($barang) {
-                    // Jika stok berkurang menjadi 0, ubah status
-                    if ($barang->stok_tersedia <= $jumlah) {
-                        $barang->update(['status' => 'dipinjam']);
-                    }
+                if ($barang->stok < $jumlah) {
+                    throw new \Exception("Stok barang {$barang->nama} tidak mencukupi. Stok tersedia: {$barang->stok}");
+                }
+
+                // Tambah ke pivot
+                $peminjaman->barang()->attach($barangId, ['jumlah' => $jumlah]);
+
+                // Update stok barang
+                $barang->decrement('stok', $jumlah);
+
+                // Update status jika stok habis
+                if ($barang->stok <= 0) {
+                    $barang->update(['status' => 'dipinjam']);
                 }
             }
 
-            \DB::commit();
+            DB::commit();
 
             return redirect()->route('peminjaman.index')
-                ->with('success', 'Peminjaman berhasil dibuat!');
+                ->with('success', 'Peminjaman berhasil dibuat!')
+                ->with('kode', $kodePeminjaman); // Tampilkan kode ke user
+
         } catch (\Exception $e) {
-            \DB::rollBack();
+            DB::rollBack();
+
+            \Log::error('Gagal membuat peminjaman: ' . $e->getMessage());
+            \Log::error($e->getTraceAsString());
 
             return back()->withInput()
                 ->with('error', 'Gagal membuat peminjaman: ' . $e->getMessage());
         }
     }
-
-
-
 
     /**
      * Display the specified resource.
@@ -154,7 +188,7 @@ class PeminjamanController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Show the form for editing the specified resource.
      */
     public function edit(Peminjaman $peminjaman)
     {
@@ -163,18 +197,10 @@ class PeminjamanController extends Controller
                 ->with('error', 'Hanya peminjaman yang masih aktif dapat diedit.');
         }
 
-        $barang = Barang::all();
-        $mahasiswa = Mahasiswa::get();
+        $barang = Barang::where('status', 'tersedia')->get();
+        $mahasiswa = Mahasiswa::all();
 
-        // Kirim data tambahan untuk edit
-        return view('peminjaman.edit', [
-            'peminjaman' => $peminjaman,
-            'barang' => $barang,
-            'mahasiswa' => $mahasiswa,
-            'stats' => [
-                'is_terlambat' => $peminjaman->is_terlambat,
-            ]
-        ]);
+        return view('peminjaman.edit', compact('peminjaman', 'barang', 'mahasiswa'));
     }
 
     /**
@@ -187,56 +213,60 @@ class PeminjamanController extends Controller
                 ->with('error', 'Hanya peminjaman yang masih aktif dapat diupdate.');
         }
 
-        // Validasi dengan field yang sesuai dengan form
         $request->validate([
-            'barang_id' => 'required|exists:barang,id',
             'mahasiswa_id' => 'required|exists:mahasiswa,id',
             'tanggal_peminjaman' => 'required|date',
-            'tanggal_pengembalian' => 'required|date|after:tanggal_peminjaman',
-            // HAPUS jumlah karena sudah tidak ada di form
-            // 'jumlah' => 'required|integer|min:1',
-            'keterangan' => 'nullable|string',
+            'tanggal_pengembalian' => 'required|date|after_or_equal:tanggal_peminjaman',
+            'tujuan_peminjaman' => 'required|string|max:255',
+            'lokasi_penggunaan' => 'nullable|string|max:255',
+            'catatan' => 'nullable|string',
+            'barang_ids' => 'required|array|min:1',
+            'barang_ids.*' => 'exists:barang,id',
+            'barang.*.jumlah' => 'required|integer|min:1'
         ]);
 
+        DB::beginTransaction();
+
         try {
-            DB::beginTransaction();
+            // Kembalikan stok barang lama
+            foreach ($peminjaman->barang as $barang) {
+                $jumlahLama = $barang->pivot->jumlah;
+                $barang->increment('stok', $jumlahLama);
 
-            // Karena jumlah dihapus, kita asumsikan jumlah tetap 1
-            $jumlah = 1; // Default 1 karena form tidak punya field jumlah
-
-            // Cek stok tersedia (kecuali barang yang sama)
-            if ($request->barang_id != $peminjaman->barang_id) {
-                $barang = Barang::findOrFail($request->barang_id);
-                $stok_tersedia = $barang->stok; // Gunakan stok dari tabel barang
-
-                if ($jumlah > $stok_tersedia) {
-                    return back()->withErrors([
-                        'jumlah' => 'Stok tidak mencukupi. Stok tersedia: ' . $stok_tersedia
-                    ])->withInput();
-                }
-            } else {
-                // Jika barang sama, hitung perubahan jumlah
-                $barang = Barang::findOrFail($request->barang_id);
-                $stok_tersedia = $barang->stok; // Stok saat ini
-
-                // Periksa apakah jumlah baru (default 1) lebih besar dari stok
-                if ($jumlah > $stok_tersedia) {
-                    return back()->withErrors([
-                        'jumlah' => 'Stok tidak mencukupi. Stok tersedia: ' . $stok_tersedia
-                    ])->withInput();
+                if ($barang->stok > 0 && $barang->status === 'dipinjam') {
+                    $barang->update(['status' => 'tersedia']);
                 }
             }
 
-            // Update data - PERHATIKAN field yang diupdate!
+            // Hapus relasi barang lama
+            $peminjaman->barang()->detach();
+
+            // Update data peminjaman
             $peminjaman->update([
-                'barang_id' => $request->barang_id,
-                'user_id' => $request->mahasiswa_id, // Tabel peminjaman punya user_id, bukan mahasiswa_id
+                'user_id' => $request->mahasiswa_id,
                 'tanggal_peminjaman' => $request->tanggal_peminjaman,
                 'tanggal_pengembalian' => $request->tanggal_pengembalian,
-                // Tidak update tanggal_kembali karena ini field untuk pengembalian aktual
-                // 'jumlah' => $jumlah, // Tidak ada field jumlah di tabel peminjaman
-                'catatan' => $request->keterangan, // Field di tabel adalah catatan
+                'tujuan_peminjaman' => $request->tujuan_peminjaman,
+                'lokasi_penggunaan' => $request->lokasi_penggunaan,
+                'catatan' => $request->catatan,
             ]);
+
+            // Tambah barang baru
+            foreach ($request->barang_ids as $barangId) {
+                $jumlah = $request->input("barang.{$barangId}.jumlah", 1);
+                $barang = Barang::findOrFail($barangId);
+
+                if ($barang->stok < $jumlah) {
+                    throw new \Exception("Stok barang {$barang->nama} tidak mencukupi. Stok tersedia: {$barang->stok}");
+                }
+
+                $peminjaman->barang()->attach($barangId, ['jumlah' => $jumlah]);
+                $barang->decrement('stok', $jumlah);
+
+                if ($barang->stok <= 0) {
+                    $barang->update(['status' => 'dipinjam']);
+                }
+            }
 
             DB::commit();
 
@@ -244,7 +274,8 @@ class PeminjamanController extends Controller
                 ->with('success', 'Peminjaman berhasil diupdate.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['error' => 'Terjadi kesalahan: ' . $e->getMessage()]);
+            return back()->withInput()
+                ->with('error', 'Gagal mengupdate peminjaman: ' . $e->getMessage());
         }
     }
 
@@ -258,9 +289,23 @@ class PeminjamanController extends Controller
                 ->with('error', 'Hanya peminjaman yang masih aktif dapat dihapus.');
         }
 
-        try {
-            DB::beginTransaction();
+        DB::beginTransaction();
 
+        try {
+            // Kembalikan stok barang
+            foreach ($peminjaman->barang as $barang) {
+                $jumlah = $barang->pivot->jumlah;
+                $barang->increment('stok', $jumlah);
+
+                if ($barang->stok > 0 && $barang->status === 'dipinjam') {
+                    $barang->update(['status' => 'tersedia']);
+                }
+            }
+
+            // Hapus relasi pivot
+            $peminjaman->barang()->detach();
+
+            // Hapus peminjaman
             $peminjaman->delete();
 
             DB::commit();
@@ -269,7 +314,7 @@ class PeminjamanController extends Controller
                 ->with('success', 'Peminjaman berhasil dihapus.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['error' => 'Terjadi kesalahan: ' . $e->getMessage()]);
+            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
 
@@ -278,15 +323,15 @@ class PeminjamanController extends Controller
      */
     public function kembalikan(Request $request, $id)
     {
-        $peminjaman = Peminjaman::findOrFail($id);
+        $peminjaman = Peminjaman::with('barang')->findOrFail($id);
 
         if ($peminjaman->status === 'dikembalikan') {
             return back()->with('error', 'Barang sudah dikembalikan sebelumnya.');
         }
 
-        try {
-            DB::beginTransaction();
+        DB::beginTransaction();
 
+        try {
             $tanggal_dikembalikan = now();
             $status = 'dikembalikan';
 
@@ -295,6 +340,17 @@ class PeminjamanController extends Controller
                 $status = 'terlambat';
             }
 
+            // Kembalikan stok barang
+            foreach ($peminjaman->barang as $barang) {
+                $jumlah = $barang->pivot->jumlah;
+                $barang->increment('stok', $jumlah);
+
+                if ($barang->stok > 0 && $barang->status === 'dipinjam') {
+                    $barang->update(['status' => 'tersedia']);
+                }
+            }
+
+            // Update status peminjaman
             $peminjaman->update([
                 'tanggal_dikembalikan' => $tanggal_dikembalikan,
                 'status' => $status,
@@ -306,13 +362,10 @@ class PeminjamanController extends Controller
                 ->with('success', 'Pengembalian barang berhasil dicatat.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['error' => 'Terjadi kesalahan: ' . $e->getMessage()]);
+            return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
 
-    /**
-     * Riwayat Peminjaman
-     */
     /**
      * Riwayat Peminjaman
      */
@@ -323,8 +376,7 @@ class PeminjamanController extends Controller
         $start_date = $request->get('start_date', '');
         $end_date = $request->get('end_date', '');
 
-        $query = Peminjaman::with(['barang', 'mahasiswa'])
-            ->latest();
+        $query = Peminjaman::with(['barang', 'mahasiswa']);
 
         // Filter keyword
         if ($keyword) {
@@ -353,7 +405,8 @@ class PeminjamanController extends Controller
             $query->whereDate('tanggal_peminjaman', '<=', $end_date);
         }
 
-        $riwayat = $query->paginate(15);  // <-- Variabel $riwayat
+        $riwayat = $query->latest()->paginate(15);
+
         return view('peminjaman.riwayat', compact(
             'riwayat',
             'keyword',

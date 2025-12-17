@@ -75,11 +75,10 @@ class Barang extends Model
 
 
 
-    // app/Models/Barang.php
+    // Relasi peminjaman yang masih aktif
     public function peminjamanAktif()
     {
-        // Contoh relationship (sesuaikan dengan model Anda)
-        return $this->hasOne(Peminjaman::class)->where('status', 'aktif');
+        return $this->peminjaman()->where('status', 'dipinjam');
     }
 
 
@@ -98,20 +97,17 @@ class Barang extends Model
 
     protected $appends = ['stok_tersedia'];
 
-    // Relasi ke Peminjaman
     public function peminjaman()
     {
-        return $this->hasMany(Peminjaman::class);
+        return $this->belongsToMany(Peminjaman::class, 'peminjaman_barang')
+            ->withPivot('jumlah')
+            ->withTimestamps();
     }
 
-    // Accessor untuk stok tersedia
+    // Hitung stok tersedia
     public function getStokTersediaAttribute()
     {
-        $stok = $this->stok ?? 10; // default 10 jika kolom stok tidak ada
-        $dipinjam = $this->peminjaman()
-            ->where('status', 'dipinjam')
-            ->sum('barang_id'); // <-- SALAH! Ini menjumlahkan ID, bukan jumlah barang dipinjam
-
-        return $stok - $dipinjam;
+        $dipinjam = $this->peminjamanAktif()->sum('peminjaman_barang.jumlah');
+        return $this->stok - $dipinjam;
     }
 }
