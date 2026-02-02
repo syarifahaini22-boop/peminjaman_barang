@@ -12,8 +12,8 @@ class AdminController extends Controller
 {
     public function index()
     {
-        $admins = User::whereIn('role', ['admin', 'staff', 'supervisor'])
-            ->orderBy('created_at', 'desc')
+        $admins = User::whereIn('role', ['admin', 'staff', 'supervisor', 'mahasiswa'])
+            ->orWhere('email', 'like', '%@labrsi.com%') // Atau ambil semua email labrsi
             ->get();
 
         return view('admin.index', compact('admins'));

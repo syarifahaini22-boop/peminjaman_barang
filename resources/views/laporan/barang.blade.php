@@ -31,7 +31,7 @@
                             <label class="form-label">&nbsp;</label>
                             <div class="d-grid gap-2">
                                 <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-filter"></i> Filter
+                                    <i class="fas fa-filter"></i> Cari
                                 </button>
                             </div>
                         </div>

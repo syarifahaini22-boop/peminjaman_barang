@@ -70,7 +70,7 @@
                         </div>
 
                         <div class="col-md-4 mb-3">
-                            <label for="lokasi" class="form-label form-label-custom">Lokasi Penyimpanan *</label>
+                            <label for="lokasi" class="form-label form-label-custom">Lokasi Penyimpanan</label>
                             <input type="text"
                                 class="form-control form-control-custom @error('lokasi') is-invalid @enderror"
                                 id="lokasi" name="lokasi" value="{{ old('lokasi') }}"
@@ -84,7 +84,7 @@
                     <!-- BARIS BARU: TAMBAHKAN FIELD STOK -->
                     <div class="row">
                         <div class="col-md-4 mb-3">
-                            <label for="stok" class="form-label form-label-custom">Stok *</label>
+                            <label for="stok" class="form-label form-label-custom">Stok</label>
                             <input type="number"
                                 class="form-control form-control-custom @error('stok') is-invalid @enderror" id="stok"
                                 name="stok" value="{{ old('stok', 1) }}" required min="0" step="1"
@@ -96,7 +96,7 @@
                         </div>
 
                         <div class="col-md-4 mb-3">
-                            <label for="status" class="form-label form-label-custom">Status *</label>
+                            <label for="status" class="form-label form-label-custom">Status</label>
                             <select class="form-select form-control-custom @error('status') is-invalid @enderror"
                                 id="status" name="status">
                                 <option value="tersedia" {{ old('status') == 'tersedia' ? 'selected' : '' }}>Tersedia
@@ -113,7 +113,7 @@
                         </div>
 
                         <div class="col-md-4 mb-3">
-                            <label for="kondisi" class="form-label form-label-custom">Kondisi *</label>
+                            <label for="kondisi" class="form-label form-label-custom">Kondisi</label>
                             <select class="form-select form-control-custom @error('kondisi') is-invalid @enderror"
                                 id="kondisi" name="kondisi" required>
                                 <option value="baik" {{ old('kondisi') == 'baik' ? 'selected' : '' }}>Baik</option>
