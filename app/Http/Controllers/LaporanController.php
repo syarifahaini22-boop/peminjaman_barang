@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Peminjaman;
 use App\Models\Barang;
-use App\Models\User;
+use App\Models\Mahasiswa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -25,71 +25,127 @@ class LaporanController extends Controller
      */
     public function peminjaman(Request $request)
     {
-        $start_date = $request->get('start_date', date('Y-m-01'));
-        $end_date = $request->get('end_date', date('Y-m-d'));
-        $status = $request->get('status');
+        $search = $request->get('search', '');
 
-        $query = Peminjaman::with(['barang', 'mahasiswa'])
-            ->whereBetween('tanggal_peminjaman', [$start_date, $end_date]);
+        $query = Peminjaman::with(['barang', 'mahasiswa']);
 
-        if ($status && in_array($status, ['dipinjam', 'dikembalikan', 'terlambat'])) {
-            $query->where('status', $status);
+        // Filter berdasarkan pencarian nama barang atau mahasiswa
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('barang', function ($q2) use ($search) {
+                    $q2->where('nama', 'like', '%' . $search . '%');
+                })
+                    ->orWhereHas('mahasiswa', function ($q2) use ($search) {
+                        $q2->where('name', 'like', '%' . $search . '%');
+                    })
+                    ->orWhere('kode_peminjaman', 'like', '%' . $search . '%');
+            });
         }
 
-        $peminjaman = $query->orderBy('tanggal_peminjaman', 'desc')->get();
+        // Urutkan berdasarkan tanggal peminjaman terbaru
+        $query->orderBy('tanggal_peminjaman', 'desc');
 
-        // Statistik
+        // Gunakan paginate untuk performa lebih baik
+        $peminjaman = $query->paginate(20);
+
+        // Statistik - hitung semua data, bukan hanya yang ditampilkan di halaman
+        $statsQuery = Peminjaman::query();
+
+        if (!empty($search)) {
+            $statsQuery->where(function ($q) use ($search) {
+                $q->whereHas('barang', function ($q2) use ($search) {
+                    $q2->where('nama', 'like', '%' . $search . '%');
+                })
+                    ->orWhereHas('mahasiswa', function ($q2) use ($search) {
+                        $q2->where('name', 'like', '%' . $search . '%');
+                    })
+                    ->orWhere('kode_peminjaman', 'like', '%' . $search . '%');
+            });
+        }
+
         $stats = [
-            'total' => $peminjaman->count(),
-            'dipinjam' => $peminjaman->where('status', 'dipinjam')->count(),
-            'dikembalikan' => $peminjaman->where('status', 'dikembalikan')->count(),
-            'terlambat' => $peminjaman->where('status', 'terlambat')->count(),
-            'total_barang' => $peminjaman->sum('jumlah'),
+            'total' => $statsQuery->count(),
+            'dipinjam' => $statsQuery->where('status', 'dipinjam')->count(),
+            'dikembalikan' => $statsQuery->where('status', 'dikembalikan')->count(),
+            'terlambat' => $statsQuery->where('status', 'terlambat')->count(),
         ];
 
         return view('laporan.peminjaman', compact(
             'peminjaman',
             'stats',
-            'start_date',
-            'end_date',
-            'status'
+            'search'
         ));
     }
 
     /**
-     * Laporan Pengembalian
+     * Laporan Pengembalian - Sederhana hanya dengan pencarian
      */
     public function pengembalian(Request $request)
     {
-        $start_date = $request->get('start_date', date('Y-m-01'));
-        $end_date = $request->get('end_date', date('Y-m-d'));
+        // Ambil parameter pencarian
+        $search = $request->get('search', '');
 
-        $pengembalian = Peminjaman::with(['barang', 'mahasiswa'])
-            ->whereNotNull('tanggal_dikembalikan')
-            ->whereBetween('tanggal_dikembalikan', [$start_date, $end_date])
-            ->orderBy('tanggal_dikembalikan', 'desc')
-            ->get();
+        // Query untuk pengembalian (status dikembalikan atau terlambat)
+        $query = Peminjaman::with(['mahasiswa', 'barang'])
+            ->whereIn('status', ['dikembalikan', 'terlambat']);
 
-        // Statistik pengembalian terlambat
-        $terlambat = $pengembalian->where('status', 'terlambat')->count();
-        $tepat_waktu = $pengembalian->where('status', 'dikembalikan')->count();
+        // Filter pencarian (nama mahasiswa, NIM, nama barang, atau kode peminjaman)
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('mahasiswa', function ($q2) use ($search) {
+                    $q2->where('name', 'like', "%{$search}%")
+                        ->orWhere('nim', 'like', "%{$search}%");
+                })
+                    ->orWhereHas('barang', function ($q2) use ($search) {
+                        $q2->where('nama', 'like', "%{$search}%");
+                    })
+                    ->orWhere('kode_peminjaman', 'like', "%{$search}%");
+            });
+        }
 
-        $stats = [
-            'total' => $pengembalian->count(),
-            'terlambat' => $terlambat,
-            'tepat_waktu' => $tepat_waktu,
-            'persentase_terlambat' => $pengembalian->count() > 0
-                ? round(($terlambat / $pengembalian->count()) * 100, 2)
-                : 0,
-        ];
+        // Urutkan berdasarkan tanggal dikembalikan terbaru
+        $query->orderBy('tanggal_dikembalikan', 'desc');
 
-        return view('laporan.pengembalian', compact(
+        $pengembalian = $query->paginate(20);
+
+        // Hitung statistik
+        $statQuery = Peminjaman::whereIn('status', ['dikembalikan', 'terlambat']);
+
+        // Terapkan filter yang sama untuk statistik
+        if (!empty($search)) {
+            $statQuery->where(function ($q) use ($search) {
+                $q->whereHas('mahasiswa', function ($q2) use ($search) {
+                    $q2->where('name', 'like', "%{$search}%")
+                        ->orWhere('nim', 'like', "%{$search}%");
+                })
+                    ->orWhereHas('barang', function ($q2) use ($search) {
+                        $q2->where('nama', 'like', "%{$search}%");
+                    })
+                    ->orWhere('kode_peminjaman', 'like', "%{$search}%");
+            });
+        }
+
+        $tepat_waktu = $statQuery->where('status', 'dikembalikan')->count();
+        $terlambat = $statQuery->where('status', 'terlambat')->count();
+
+        // Hitung total barang yang dikembalikan
+        $total_barang = 0;
+        foreach ($pengembalian as $peminjaman) {
+            foreach ($peminjaman->barang as $barang) {
+                $total_barang += $barang->pivot->jumlah ?? 1;
+            }
+        }
+
+        return view('pengembalian.index', compact(
             'pengembalian',
-            'stats',
-            'start_date',
-            'end_date'
+            'tepat_waktu',
+            'terlambat',
+            'total_barang',
+            'search'
         ));
     }
+
+
 
     /**
      * Laporan Barang
@@ -126,11 +182,6 @@ class LaporanController extends Controller
     /**
      * Laporan Mahasiswa
      */
-    // Di App\Http\Controllers\LaporanController.php
-
-    /**
-     * Laporan Mahasiswa
-     */
     public function mahasiswa()
     {
         // Gunakan model Mahasiswa, bukan User
@@ -153,19 +204,6 @@ class LaporanController extends Controller
             ->get();
 
         return view('laporan.mahasiswa', compact('mahasiswa', 'jurusanStats', 'topMahasiswa'));
-    }
-    /**
-     * Export Excel
-     */
-    public function exportExcel(Request $request)
-    {
-        $type = $request->get('type', 'peminjaman');
-        $start_date = $request->get('start_date', date('Y-m-01'));
-        $end_date = $request->get('end_date', date('Y-m-d'));
-
-        // Untuk sementara, redirect ke view dulu
-        // Nanti bisa diintegrasikan dengan Maatwebsite/Laravel-Excel
-        return redirect()->back()->with('info', 'Fitur export Excel akan segera tersedia');
     }
 
     /**
@@ -207,62 +245,5 @@ class LaporanController extends Controller
         ]);
 
         return $pdf->download('laporan-' . $type . '-' . date('Y-m-d') . '.pdf');
-    }
-
-    /**
-     * Dashboard Statistik (API untuk chart)
-     */
-    public function getStats(Request $request)
-    {
-        $year = $request->get('year', date('Y'));
-
-        // Statistik peminjaman per bulan
-        $monthlyStats = Peminjaman::select(
-            DB::raw('MONTH(tanggal_peminjaman) as month'),
-            DB::raw('COUNT(*) as total')
-        )
-            ->whereYear('tanggal_peminjaman', $year)
-            ->groupBy(DB::raw('MONTH(tanggal_peminjaman)'))
-            ->orderBy('month')
-            ->get()
-            ->pluck('total', 'month')
-            ->toArray();
-
-        // Isi bulan yang kosong
-        $monthlyData = [];
-        for ($i = 1; $i <= 12; $i++) {
-            $monthlyData[] = $monthlyStats[$i] ?? 0;
-        }
-
-        // Statistik per kategori barang
-        $categoryStats = Barang::select(
-            'kategori',
-            DB::raw('COUNT(*) as total')
-        )
-            ->groupBy('kategori')
-            ->get()
-            ->pluck('total', 'kategori')
-            ->toArray();
-
-        // Top 5 barang paling sering dipinjam
-        $topBarang = Barang::withCount(['peminjaman as peminjaman_count'])
-            ->orderBy('peminjaman_count', 'desc')
-            ->limit(5)
-            ->get();
-
-        // Top 5 mahasiswa paling aktif
-        $topMahasiswa = User::where('role', 'mahasiswa')
-            ->withCount(['peminjaman as peminjaman_count'])
-            ->orderBy('peminjaman_count', 'desc')
-            ->limit(5)
-            ->get();
-
-        return response()->json([
-            'monthly' => $monthlyData,
-            'categories' => $categoryStats,
-            'top_barang' => $topBarang,
-            'top_mahasiswa' => $topMahasiswa,
-            'year' => $year,
-        ]);
     }
 }

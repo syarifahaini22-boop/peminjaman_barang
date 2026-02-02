@@ -7,36 +7,28 @@
         <div class="row">
             <div class="col-md-12">
                 <div class="card">
-                    <div class="card-header">
-                        <h4 class="card-title mb-0">
-                            <i class="fas fa-undo-alt me-2"></i>Laporan Pengembalian Barang
-                        </h4>
-                    </div>
+
                     <div class="card-body">
 
                         <!-- Filter Form -->
                         <div class="card mb-4">
                             <div class="card-body">
-                                <form method="GET" action="{{ route('laporan.pengembalian') }}">
+                                <form method="GET" action="{{ route('laporan.pengembalian') }}" id="filterForm">
                                     <div class="row g-3">
-                                        <div class="col-md-4">
-                                            <label for="start_date" class="form-label">Tanggal Mulai</label>
-                                            <input type="date" class="form-control" id="start_date" name="start_date"
-                                                value="{{ $start_date }}">
-                                        </div>
-                                        <div class="col-md-4">
-                                            <label for="end_date" class="form-label">Tanggal Akhir</label>
-                                            <input type="date" class="form-control" id="end_date" name="end_date"
-                                                value="{{ $end_date }}">
+                                        <div class="col-md-8">
+                                            <label for="search" class="form-label">Cari Nama/Barang</label>
+                                            <input type="text" class="form-control" id="search" name="search"
+                                                placeholder="Cari nama mahasiswa, NIM, nama barang, atau kode peminjaman..."
+                                                value="{{ $search ?? '' }}">
                                         </div>
                                         <div class="col-md-4 d-flex align-items-end">
                                             <div class="d-grid gap-2 d-md-flex w-100">
                                                 <button type="submit" class="btn btn-primary">
-                                                    <i class="fas fa-filter"></i> Filter
+                                                    <i class="fas fa-search me-1"></i> Cari
                                                 </button>
-                                                @if ($start_date || $end_date)
+                                                @if (!empty($search))
                                                     <a href="{{ route('laporan.pengembalian') }}" class="btn btn-secondary">
-                                                        <i class="fas fa-times"></i> Reset
+                                                        <i class="fas fa-times me-1"></i> Reset
                                                     </a>
                                                 @endif
                                             </div>
@@ -46,71 +38,17 @@
                             </div>
                         </div>
 
-                        <!-- Statistik -->
-                        @if ($pengembalian->count() > 0)
-                            <div class="row mb-4">
-                                <div class="col-md-3">
-                                    <div class="card border-0 shadow-sm bg-primary text-white">
-                                        <div class="card-body">
-                                            <div class="d-flex align-items-center">
-                                                <div class="flex-shrink-0">
-                                                    <i class="fas fa-box fa-2x opacity-75"></i>
-                                                </div>
-                                                <div class="flex-grow-1 ms-3">
-                                                    <h5 class="mb-1">{{ $pengembalian->count() }}</h5>
-                                                    <p class="mb-0 opacity-75">Total Pengembalian</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="card border-0 shadow-sm bg-success text-white">
-                                        <div class="card-body">
-                                            <div class="d-flex align-items-center">
-                                                <div class="flex-shrink-0">
-                                                    <i class="fas fa-check-circle fa-2x opacity-75"></i>
-                                                </div>
-                                                <div class="flex-grow-1 ms-3">
-                                                    <h5 class="mb-1">{{ $tepat_waktu }}</h5>
-                                                    <p class="mb-0 opacity-75">Tepat Waktu</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="card border-0 shadow-sm bg-warning text-white">
-                                        <div class="card-body">
-                                            <div class="d-flex align-items-center">
-                                                <div class="flex-shrink-0">
-                                                    <i class="fas fa-clock fa-2x opacity-75"></i>
-                                                </div>
-                                                <div class="flex-grow-1 ms-3">
-                                                    <h5 class="mb-1">{{ $terlambat }}</h5>
-                                                    <p class="mb-0 opacity-75">Terlambat</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="card border-0 shadow-sm bg-info text-white">
-                                        <div class="card-body">
-                                            <div class="d-flex align-items-center">
-                                                <div class="flex-shrink-0">
-                                                    <i class="fas fa-cubes fa-2x opacity-75"></i>
-                                                </div>
-                                                <div class="flex-grow-1 ms-3">
-                                                    <h5 class="mb-1">{{ $total_barang }}</h5>
-                                                    <p class="mb-0 opacity-75">Total Barang</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                        <!-- Pesan jika ada pencarian -->
+                        @if (!empty($search))
+                            <div class="alert alert-info mb-4">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Menampilkan hasil pencarian untuk: <strong>"{{ $search }}"</strong>
+                                <span class="float-end">
+                                    Ditemukan {{ $pengembalian->total() }} data
+                                </span>
                             </div>
                         @endif
+
 
                         <!-- Tabel Pengembalian -->
                         <div class="card">
@@ -135,7 +73,8 @@
                                             <tbody>
                                                 @foreach ($pengembalian as $item)
                                                     <tr>
-                                                        <td>{{ $loop->iteration }}</td>
+                                                        <td>{{ ($pengembalian->currentPage() - 1) * $pengembalian->perPage() + $loop->iteration }}
+                                                        </td>
                                                         <td>
                                                             <strong>{{ $item->kode_peminjaman }}</strong>
                                                         </td>
@@ -156,8 +95,9 @@
                                                             @endif
                                                         </td>
                                                         <td>
-                                                            <div>{{ $item->user->name ?? 'N/A' }}</div>
-                                                            <small class="text-muted">{{ $item->user->nim ?? '-' }}</small>
+                                                            <div>{{ $item->mahasiswa->name ?? 'N/A' }}</div>
+                                                            <small
+                                                                class="text-muted">{{ $item->mahasiswa->nim ?? '-' }}</small>
                                                         </td>
                                                         <td>{{ $item->tanggal_peminjaman->format('d/m/Y') }}</td>
                                                         <td>{{ $item->tanggal_pengembalian->format('d/m/Y') }}</td>
@@ -210,7 +150,7 @@
                                     <!-- Pagination -->
                                     @if ($pengembalian->hasPages())
                                         <div class="mt-4">
-                                            {{ $pengembalian->links() }}
+                                            {{ $pengembalian->appends(['search' => $search])->links() }}
                                         </div>
                                     @endif
                                 @else
@@ -219,13 +159,13 @@
                                             <i class="fas fa-inbox fa-3x mb-3"></i>
                                             <h5>Tidak ada data pengembalian</h5>
                                             <p class="mb-4">
-                                                @if ($start_date || $end_date)
-                                                    Data pengembalian belum tersedia untuk periode yang dipilih.
+                                                @if (!empty($search))
+                                                    Data pengembalian tidak ditemukan untuk pencarian "{{ $search }}"
                                                 @else
                                                     Belum ada data pengembalian barang.
                                                 @endif
                                             </p>
-                                            @if ($start_date || $end_date)
+                                            @if (!empty($search))
                                                 <a href="{{ route('laporan.pengembalian') }}" class="btn btn-primary">
                                                     <i class="fas fa-list"></i> Lihat Semua Data
                                                 </a>
@@ -261,18 +201,8 @@
             font-weight: 500;
         }
 
-        .card.bg-primary,
-        .card.bg-success,
-        .card.bg-warning,
-        .card.bg-info {
-            transition: transform 0.2s;
-        }
-
-        .card.bg-primary:hover,
-        .card.bg-success:hover,
-        .card.bg-warning:hover,
-        .card.bg-info:hover {
-            transform: translateY(-5px);
+        .alert {
+            border-radius: 10px;
         }
     </style>
 @endpush
@@ -280,27 +210,20 @@
 @push('scripts')
     <script>
         $(document).ready(function() {
-            // Set tanggal default jika kosong
-            if (!$('#start_date').val()) {
-                const today = new Date();
-                const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-                $('#start_date').val(firstDay.toISOString().split('T')[0]);
-            }
+            // Auto-focus ke search field
+            $('#search').focus();
 
-            if (!$('#end_date').val()) {
-                const today = new Date();
-                $('#end_date').val(today.toISOString().split('T')[0]);
-            }
-
-            // Validasi tanggal
-            $('form').submit(function() {
-                const startDate = new Date($('#start_date').val());
-                const endDate = new Date($('#end_date').val());
-
-                if (startDate > endDate) {
-                    alert('Tanggal mulai tidak boleh lebih besar dari tanggal akhir!');
-                    return false;
+            // Submit form ketika menekan Enter di input search
+            $('#search').on('keypress', function(e) {
+                if (e.which === 13) { // 13 adalah keycode untuk Enter
+                    e.preventDefault();
+                    $('#filterForm').submit();
                 }
+            });
+
+            // Clear input ketika diklik tombol Reset
+            $('.btn-secondary').on('click', function() {
+                $('#search').val('');
             });
         });
     </script>

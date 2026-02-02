@@ -55,20 +55,27 @@
                     <div class="row g-3">
                         <div class="col-md-8">
                             <input type="text" name="keyword" class="form-control"
-                                placeholder="Cari nama, NIM, atau jurusan..." value="{{ $keyword }}">
+                                placeholder="Cari nama, NIM, atau jurusan..."
+                                value="{{ isset($keyword) ? $keyword : old('keyword') ?? '' }}">
                         </div>
                         <div class="col-md-4">
                             <div class="d-grid gap-2 d-md-flex">
                                 <button type="submit" class="btn btn-primary">
                                     <i class="fas fa-search"></i> Cari
                                 </button>
-
+                                @if (request()->has('keyword') && !empty(request('keyword')))
+                                    <a href="{{ route('mahasiswa.index') }}" class="btn btn-secondary ms-2">
+                                        <i class="fas fa-times"></i> Reset
+                                    </a>
+                                @endif
                             </div>
                         </div>
                     </div>
                 </form>
             </div>
         </div>
+
+
 
         <!-- Table Mahasiswa -->
         <div class="card">

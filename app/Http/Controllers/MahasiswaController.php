@@ -14,25 +14,21 @@ class MahasiswaController extends Controller
      */
     public function index(Request $request)
     {
-        // Ambil keyword pencarian
-        $keyword = $request->keyword;
+        $keyword = $request->get('keyword');
 
-        // Ambil data dari tabel MAHASISWA (bukan users)
-        $mahasiswa = Mahasiswa::when($keyword, function ($query) use ($keyword) {
-            $query->where('name', 'like', "%{$keyword}%")
-                ->orWhere('nim', 'like', "%{$keyword}%")
-                ->orWhere('fakultas', 'like', "%{$keyword}%")
-                ->orWhere('jurusan', 'like', "%{$keyword}%");
-        })
-            ->orderBy('name') // Urutkan berdasarkan nama
-            ->paginate(10)
-            ->withQueryString();
+        $query = Mahasiswa::query();
 
-        // Kirim data ke view
-        return view('mahasiswa.index', [
-            'mahasiswa' => $mahasiswa,
-            'keyword'   => $keyword,
-        ]);
+        if ($keyword) {
+            $query->where(function ($q) use ($keyword) {
+                $q->where('name', 'like', '%' . $keyword . '%')
+                    ->orWhere('nim', 'like', '%' . $keyword . '%')
+                    ->orWhere('jurusan', 'like', '%' . $keyword . '%');
+            });
+        }
+
+        $mahasiswa = $query->paginate(10);
+
+        return view('mahasiswa.index', compact('mahasiswa', 'keyword'));
     }
 
     /**
@@ -48,25 +44,18 @@ class MahasiswaController extends Controller
      */
     public function store(Request $request)
     {
-        // Validasi data input sesuai form
-        $request->validate([
+        // Validasi data input
+        $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'nim' => 'required|string|max:20|unique:mahasiswa,nim', // Validasi untuk tabel mahasiswa
+            'nim' => 'required|string|max:20|unique:mahasiswa,nim',
             'no_hp' => 'required|string|max:15',
             'fakultas' => 'nullable|string|max:255',
             'jurusan' => 'nullable|string|max:255',
         ]);
 
-        // Simpan data ke tabel MAHASISWA (bukan users)
-        Mahasiswa::create([
-            'name' => $request->name,
-            'nim' => $request->nim,
-            'no_hp' => $request->no_hp,
-            'fakultas' => $request->fakultas,
-            'jurusan' => $request->jurusan,
-        ]);
+        // Simpan data menggunakan validated data
+        Mahasiswa::create($validated);
 
-        // Redirect dengan pesan sukses
         return redirect()->route('mahasiswa.index')
             ->with('success', 'Mahasiswa berhasil ditambahkan!');
     }
@@ -76,22 +65,8 @@ class MahasiswaController extends Controller
      */
     public function show($id)
     {
-        // Cari mahasiswa dari tabel MAHASISWA
-        $mahasiswa = Mahasiswa::find($id);
-
-        // Jika tidak ditemukan, tampilkan error 404
-        if (!$mahasiswa) {
-            abort(404, 'Mahasiswa tidak ditemukan');
-        }
-
-        // Ambil riwayat peminjaman (jika ada relasi)
-        $riwayat = $mahasiswa->peminjaman()
-            ->with('barang')
-            ->latest()
-            ->paginate(10);
-
-        // Tampilkan view detail
-        return view('mahasiswa.show', compact('mahasiswa', 'riwayat'));
+        $mahasiswa = Mahasiswa::with(['peminjaman.barang'])->findOrFail($id);
+        return view('mahasiswa.show', compact('mahasiswa'));
     }
 
     /**
@@ -133,8 +108,8 @@ class MahasiswaController extends Controller
                 Rule::unique('mahasiswa')->ignore($mahasiswa->id) // unique untuk tabel mahasiswa
             ],
             'no_hp' => 'nullable|string|max:15',
-            'fakultas' => 'required|string|max:255',
-            'jurusan' => 'required|string|max:255',
+            'fakultas' => 'nullable|string|max:255',
+            'jurusan' => 'nullable|string|max:255',
         ]);
 
         // Update data mahasiswa

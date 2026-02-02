@@ -84,7 +84,7 @@
 
                             <div class="row">
                                 <div class="col-md-4 mb-3">
-                                    <label for="lokasi" class="form-label">Lokasi Penyimpanan *</label>
+                                    <label for="lokasi" class="form-label">Lokasi Penyimpanan</label>
                                     <input type="text" class="form-control @error('lokasi') is-invalid @enderror"
                                         id="lokasi" name="lokasi" value="{{ old('lokasi', $barang->lokasi) }}">
                                     @error('lokasi')
@@ -94,7 +94,7 @@
                                 </div>
 
                                 <div class="col-md-4 mb-3">
-                                    <label for="status" class="form-label">Status *</label>
+                                    <label for="status" class="form-label">Status</label>
                                     <select class="form-select @error('status') is-invalid @enderror" id="status"
                                         name="status" required>
                                         <option value="tersedia"
@@ -116,7 +116,7 @@
                                 </div>
 
                                 <div class="col-md-4 mb-3">
-                                    <label for="kondisi" class="form-label">Kondisi *</label>
+                                    <label for="kondisi" class="form-label">Kondisi</label>
                                     <select class="form-select @error('kondisi') is-invalid @enderror" id="kondisi"
                                         name="kondisi" required>
                                         <option value="baik"

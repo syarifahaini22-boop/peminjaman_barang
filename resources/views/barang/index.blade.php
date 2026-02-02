@@ -290,11 +290,7 @@
                                         </td>
                                         <td>
                                             <div class="btn-action-group">
-                                                <!-- Tombol Detail -->
-                                                <a href="{{ route('barang.show', $item->id) }}"
-                                                    class="btn-action btn-custom-info" title="Detail">
-                                                    <i class="bi bi-eye"></i>
-                                                </a>
+
 
                                                 <!-- Tombol Edit -->
                                                 <a href="{{ route('barang.edit', $item->id) }}"

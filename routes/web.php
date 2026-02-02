@@ -54,6 +54,9 @@ Route::middleware(['auth'])->group(function () {
 
     // 4. Mahasiswa CRUD
     Route::resource('mahasiswa', MahasiswaController::class);
+    // Route untuk laporan mahasiswa
+    Route::get('/laporan/mahasiswa', [MahasiswaController::class, 'index'])->name('laporan.mahasiswa');
+    Route::get('/mahasiswa/{id}', [MahasiswaController::class, 'show'])->name('mahasiswa.show');
 
     // 5. TRASH routes
     Route::get('/barang/trash', [BarangController::class, 'trash'])->name('barang.trash');
@@ -70,21 +73,20 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/peminjaman/create', [PeminjamanController::class, 'create'])->name('peminjaman.create');
     Route::post('/peminjaman/store', [PeminjamanController::class, 'store'])->name('peminjaman.store');
     Route::resource('peminjaman', PeminjamanController::class)->except(['create', 'store']);
-
     Route::post('/peminjaman/{id}/kembalikan', [PeminjamanController::class, 'kembalikan'])
         ->name('peminjaman.kembalikan');
     Route::get('/peminjaman/riwayat', [PeminjamanController::class, 'riwayat'])
         ->name('peminjaman.riwayat');
+
+
     // Laporan
-    Route::prefix('laporan')->name('laporan.')->group(function () {
-        Route::get('/', [LaporanController::class, 'index'])->name('index');
-        Route::get('/peminjaman', [LaporanController::class, 'peminjaman'])->name('peminjaman');
-        Route::get('/pengembalian', [LaporanController::class, 'pengembalian'])->name('pengembalian');
-        Route::get('/barang', [LaporanController::class, 'barang'])->name('barang');
-        Route::get('/mahasiswa', [LaporanController::class, 'mahasiswa'])->name('mahasiswa');
-        Route::get('/export/excel', [LaporanController::class, 'exportExcel'])->name('export.excel');
-        Route::get('/export/pdf', [LaporanController::class, 'exportPdf'])->name('export.pdf');
-        Route::get('/stats', [LaporanController::class, 'getStats'])->name('stats');
+    Route::prefix('laporan')->group(function () {
+        Route::get('/', [LaporanController::class, 'index'])->name('laporan.index');
+        Route::get('/peminjaman', [LaporanController::class, 'peminjaman'])->name('laporan.peminjaman');
+        Route::get('/pengembalian', [LaporanController::class, 'pengembalian'])->name('laporan.pengembalian');
+        Route::get('/barang', [LaporanController::class, 'barang'])->name('laporan.barang');
+        Route::get('/mahasiswa', [LaporanController::class, 'mahasiswa'])->name('laporan.mahasiswa');
+        Route::get('/export-pdf', [LaporanController::class, 'exportPdf'])->name('laporan.export.pdf');
     });
 });
 

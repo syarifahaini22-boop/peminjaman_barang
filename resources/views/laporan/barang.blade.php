@@ -40,41 +40,7 @@
             </div>
         </div>
 
-        <!-- Stats Cards -->
-        <div class="row mb-4">
-            <div class="col-md-3">
-                <div class="card text-white bg-primary">
-                    <div class="card-body">
-                        <h6 class="card-title">Total Barang</h6>
-                        <h3 class="card-text">{{ $stats['total_barang'] }}</h3>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card text-white bg-success">
-                    <div class="card-body">
-                        <h6 class="card-title">Total Stok</h6>
-                        <h3 class="card-text">{{ $stats['total_stok'] }}</h3>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card text-white bg-warning">
-                    <div class="card-body">
-                        <h6 class="card-title">Sedang Dipinjam</h6>
-                        <h3 class="card-text">{{ $stats['total_dipinjam'] }}</h3>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card text-white bg-info">
-                    <div class="card-body">
-                        <h6 class="card-title">Stok Tersedia</h6>
-                        <h3 class="card-text">{{ $stats['total_stok'] - $stats['total_dipinjam'] }}</h3>
-                    </div>
-                </div>
-            </div>
-        </div>
+
 
 
 

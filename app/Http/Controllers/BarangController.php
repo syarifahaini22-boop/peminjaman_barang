@@ -221,7 +221,7 @@ class BarangController extends Controller
             'nama' => 'required|string|max:255',
             'kategori' => 'required|string|in:elektronik,alat_lab,buku,perlengkapan',
             'deskripsi' => 'nullable|string',
-            'lokasi' => 'required|string|max:100',
+            'lokasi' => 'nullable|string|max:100',
             'status' => 'required|string|in:tersedia,dipinjam,rusak,maintenance',
             'kondisi' => 'required|string|in:baik,rusak_ringan,rusak_berat',
             'stok' => 'required|integer|min:0',

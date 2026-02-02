@@ -55,7 +55,6 @@ class PeminjamanController extends Controller
 
         return view('peminjaman.index', compact('riwayat', 'status', 'keyword', 'start_date', 'end_date'));
     }
-
     /**
      * Show the form for creating a new resource.
      */
@@ -183,8 +182,9 @@ class PeminjamanController extends Controller
      */
     public function show($id)
     {
-        $peminjaman = Peminjaman::with(['barang', 'mahasiswa'])->findOrFail($id);
-        return view('peminjaman.show', compact('peminjaman'));
+        $mahasiswa = Mahasiswa::with(['peminjaman.barang'])->findOrFail($id);
+
+        return view('mahasiswa.show', compact('mahasiswa'));
     }
 
     /**

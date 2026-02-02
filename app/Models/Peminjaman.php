@@ -24,7 +24,6 @@ class Peminjaman extends Model
         'catatan',
         'kondisi_kembali',
         'catatan_kembali',
-        // HAPUS 'barang_id' dari sini
     ];
 
     protected $casts = [
@@ -68,17 +67,6 @@ class Peminjaman extends Model
             return true;
         }
         return false;
-    }
-
-    // Accessor untuk kompatibilitas
-    public function getMahasiswaIdAttribute()
-    {
-        return $this->user_id;
-    }
-
-    public function setMahasiswaIdAttribute($value)
-    {
-        $this->attributes['user_id'] = $value;
     }
 
     // Helper untuk mendapatkan total jumlah barang
