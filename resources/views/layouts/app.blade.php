@@ -379,37 +379,36 @@
                         <h4 class="text-white mb-1">
                             <i class="bi bi-hospital"></i> Lab RSI
                         </h4>
-                        <p class="text-muted small mb-0">Sistem Peminjaman Barang</p>
+                        <p class="text-secondary small mb-0">Sistem Peminjaman Barang</p>
                     </div>
 
                     <ul class="nav flex-column">
-
                         <li class="nav-item mb-2">
-                            <a class="nav-link {{ request()->routeIs('barang.*') ? 'active' : '' }}"
+                            <a class="nav-link {{ request()->routeIs('barang.*') ? 'active text-dark bg-white rounded' : '' }}"
                                 href="{{ route('barang.index') }}">
                                 <i class="bi bi-box-seam me-2"></i> Data Barang
                             </a>
                         </li>
                         <li class="nav-item mb-2">
-                            <a class="nav-link {{ request()->routeIs('peminjaman.*') ? 'active' : '' }}"
+                            <a class="nav-link {{ request()->routeIs('peminjaman.*') ? 'active text-dark bg-white rounded' : '' }}"
                                 href="{{ route('peminjaman.index') }}">
                                 <i class="bi bi-calendar-check me-2"></i> Peminjaman
                             </a>
                         </li>
                         <li class="nav-item mb-2">
-                            <a class="nav-link {{ request()->routeIs('mahasiswa.*') ? 'active' : '' }}"
+                            <a class="nav-link {{ request()->routeIs('mahasiswa.*') ? 'active text-dark bg-white rounded' : '' }}"
                                 href="{{ route('mahasiswa.index') }}">
                                 <i class="bi bi-people me-2"></i> Data Mahasiswa
                             </a>
                         </li>
                         <li class="nav-item mb-2">
-                            <a class="nav-link {{ request()->routeIs('laporan.*') ? 'active' : '' }}"
+                            <a class="nav-link {{ request()->routeIs('laporan.*') ? 'active text-dark bg-white rounded' : '' }}"
                                 href="{{ route('laporan.index') }}">
                                 <i class="bi bi-file-earmark-text me-2"></i> Laporan
                             </a>
                         </li>
                         <li class="nav-item mb-2">
-                            <a class="nav-link {{ request()->routeIs('admin.*') ? 'active' : '' }}"
+                            <a class="nav-link {{ request()->routeIs('admin.*') ? 'active text-dark bg-white rounded' : '' }}"
                                 href="{{ route('admin.manage') }}">
                                 <i class="bi bi-person-gear me-2"></i> Manajemen Admin
                             </a>
