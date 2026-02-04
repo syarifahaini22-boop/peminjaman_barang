@@ -147,9 +147,6 @@
             <!-- Tombol Aksi -->
             <div class="d-flex justify-content-between align-items-center mt-5 pt-4 border-top">
                 <div>
-                    <button type="reset" class="btn btn-custom btn-custom-outline">
-                        <i class="bi bi-eraser me-1"></i> Reset Form
-                    </button>
                 </div>
                 <div class="btn-group">
                     <a href="{{ route('barang.index') }}" class="btn btn-custom btn-custom-secondary me-2">
