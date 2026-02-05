@@ -27,12 +27,11 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <p class="card-text text-muted">Analisis lengkap data peminjaman barang dengan berbagai filter dan
-                            statistik.</p>
+                        <p class="card-text text-muted">Analisis lengkap data peminjaman barang dengan berbagai filter.</p>
                         <div class="mb-3">
                             <span class="badge bg-primary bg-opacity-10 text-primary me-2">Filter Tanggal</span>
                             <span class="badge bg-primary bg-opacity-10 text-primary me-2">Filter Status</span>
-                            <span class="badge bg-primary bg-opacity-10 text-primary">Analisis Grafik</span>
+                            {{-- <span class="badge bg-primary bg-opacity-10 text-primary">Analisis Grafik</span> --}}
                         </div>
                         <div class="d-flex align-items-center text-muted mb-3">
                             <i class="fas fa-chart-bar me-2"></i>
@@ -56,16 +55,16 @@
                         </div>
                         <div>
                             <h5 class="fw-bold mb-0">Laporan Pengembalian</h5>
-                            <small class="text-muted">Analisis keterlambatan & kinerja</small>
+                            <small class="text-muted">Analisis keterlambatan</small>
                         </div>
                     </div>
                     <div class="card-body">
-                        <p class="card-text text-muted">Monitoring pengembalian barang dan analisis tingkat keterlambatan.
+                        <p class="card-text text-muted">Monitoring pengembalian barang dan keterlambatan.
                         </p>
                         <div class="mb-3">
                             <span class="badge bg-success bg-opacity-10 text-success me-2">Data Pengembalian</span>
                             <span class="badge bg-success bg-opacity-10 text-success me-2">Analisis Terlambat</span>
-                            <span class="badge bg-success bg-opacity-10 text-success">Persentase</span>
+                            {{-- <span class="badge bg-success bg-opacity-10 text-success">Persentase</span> --}}
                         </div>
                         <div class="d-flex align-items-center text-muted mb-3">
                             <i class="fas fa-clock me-2"></i>
@@ -97,7 +96,7 @@
                         <div class="mb-3">
                             <span class="badge bg-warning bg-opacity-10 text-warning me-2">Stok vs Dipinjam</span>
                             <span class="badge bg-warning bg-opacity-10 text-warning me-2">Kategori Barang</span>
-                            <span class="badge bg-warning bg-opacity-10 text-warning">Barang Populer</span>
+                            {{-- <span class="badge bg-warning bg-opacity-10 text-warning">Barang Populer</span> --}}
                         </div>
                         <div class="d-flex align-items-center text-muted mb-3">
                             <i class="fas fa-star me-2"></i>

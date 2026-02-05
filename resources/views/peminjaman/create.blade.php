@@ -231,7 +231,7 @@
                                     <div class="mb-3">
                                         <label for="tujuan_peminjaman" class="form-label">Tujuan Peminjaman *</label>
                                         <textarea class="form-control" id="tujuan_peminjaman" name="tujuan_peminjaman" rows="2" required>{{ old('tujuan_peminjaman') }}</textarea>
-                                        <small class="text-muted">Contoh: Praktikum, Penelitian, Tugas Akhir, dll</small>
+                                        <small class="text-muted">Contoh: Praktikum, Belajar, Tugas Akhir, dll</small>
                                     </div>
                                 </div>
                             </div>

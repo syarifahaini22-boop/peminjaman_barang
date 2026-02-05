@@ -79,7 +79,14 @@
                                                         $pinjam->tanggal_pengembalian,
                                                     )->diffInDays(now(), false);
                                                 @endphp
-                                                Telat {{ max(0, $hari_terlambat) }} hari
+                                                @if ($hari_terlambat <= 0)
+                                                    Telat 0 hari
+                                                @elseif($hari_terlambat < 1)
+                                                    Telat 1 hari
+                                                    <!-- karena meski kurang dari 1 hari, tetap dianggap telat -->
+                                                @else
+                                                    Telat {{ ceil($hari_terlambat) }} hari
+                                                @endif
                                             </small>
                                         @endif
                                     </td>
