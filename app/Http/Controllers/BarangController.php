@@ -400,4 +400,49 @@ class BarangController extends Controller
             'message' => 'Barang tidak ditemukan atau tidak tersedia'
         ]);
     }
+
+
+    /**
+     * Search barang by kode barang or nama
+     */
+    public function searchByKodeOrNama(Request $request)
+    {
+        try {
+            $keyword = $request->get('keyword');
+
+            if (!$keyword) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Keyword pencarian tidak boleh kosong'
+                ]);
+            }
+
+            $barang = Barang::where('status', 'tersedia')
+                ->where(function ($query) use ($keyword) {
+                    $query->where('kode_barang', 'LIKE', "%{$keyword}%")
+                        ->orWhere('nama', 'LIKE', "%{$keyword}%");
+                })
+                ->select('id', 'kode_barang', 'nama', 'stok', 'kategori')
+                ->orderBy('nama')
+                ->get();
+
+            if ($barang->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Barang dengan kata kunci "' . $keyword . '" tidak ditemukan'
+                ]);
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $barang,
+                'count' => $barang->count()
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

@@ -411,38 +411,51 @@
                 $('#mahasiswa_select').val('').trigger('change');
                 showAlert('info', 'Informasi', 'Pilihan mahasiswa telah dihapus');
             });
-
             // ==================== PENCARIAN BARANG ====================
             $('#btnCariBarang').click(function() {
-                const kode = $('#kode_barang_search').val().trim();
-                if (!kode) {
-                    showAlert('warning', 'Peringatan!', 'Masukkan kode barang!');
+                const keyword = $('#kode_barang_search').val().trim();
+                if (!keyword) {
+                    showAlert('warning', 'Peringatan!', 'Masukkan kode barang atau nama barang!');
                     return;
                 }
 
                 $.ajax({
-                    url: '{{ route('barang.searchByKode') }}',
+                    url: '{{ route('barang.cari') }}',
                     type: 'GET',
                     data: {
-                        kode_barang: kode
+                        keyword: keyword
                     },
                     beforeSend: function() {
                         $('#btnCariBarang').prop('disabled', true)
                             .html('<i class="fas fa-spinner fa-spin me-1"></i> Mencari...');
                     },
                     success: function(response) {
-                        if (response.success && response.data) {
-                            tampilkanHasilPencarianBarang(response.data);
+                        if (response.success) {
+                            if (response.data.length > 1) {
+                                // Jika banyak hasil, tampilkan dalam bentuk list
+                                tampilkanHasilPencarianMultiple(response.data);
+                            } else if (response.data.length === 1) {
+                                // Jika hanya satu hasil, tampilkan detail
+                                tampilkanHasilPencarianBarang(response.data[0]);
+                            } else {
+                                $('#barangSearchResult').html(`
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Barang dengan kata kunci "${keyword}" tidak ditemukan atau tidak tersedia
+                        </div>
+                    `);
+                            }
                         } else {
                             $('#barangSearchResult').html(`
-                                <div class="alert alert-warning">
-                                    <i class="fas fa-exclamation-triangle me-2"></i>
-                                    Barang dengan kode "${kode}" tidak ditemukan atau tidak tersedia
-                                </div>
-                            `);
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        ${response.message || 'Barang tidak ditemukan'}
+                    </div>
+                `);
                         }
                     },
-                    error: function() {
+                    error: function(xhr) {
+                        console.error('Error response:', xhr);
                         showAlert('error', 'Error!', 'Terjadi kesalahan saat mencari barang');
                     },
                     complete: function() {
@@ -451,6 +464,314 @@
                     }
                 });
             });
+
+            // Fungsi untuk menampilkan multiple hasil pencarian
+            function tampilkanHasilPencarianMultiple(barangList) {
+                let html = `
+        <div class="card">
+            <div class="card-header bg-light py-2">
+                <h6 class="mb-0">
+                    <i class="fas fa-list me-2"></i>Ditemukan ${barangList.length} barang
+                </h6>
+            </div>
+            <div class="card-body p-2">
+    `;
+
+                barangList.forEach(barang => {
+                    // Tentukan kelas stok berdasarkan jumlah
+                    let stokClass = 'stok-tinggi';
+                    let stokBadgeClass = 'bg-success';
+                    if (barang.stok_tersedia <= 0) {
+                        stokClass = 'stok-habis';
+                        stokBadgeClass = 'bg-danger';
+                    } else if (barang.stok_tersedia <= 3) {
+                        stokClass = 'stok-rendah';
+                        stokBadgeClass = 'bg-danger';
+                    } else if (barang.stok_tersedia <= 10) {
+                        stokClass = 'stok-sedang';
+                        stokBadgeClass = 'bg-warning text-dark';
+                    }
+
+                    html += `
+            <div class="border rounded p-2 mb-2 barang-search-item" 
+                 data-id="${barang.id}"
+                 data-kode="${barang.kode_barang}"
+                 data-nama="${barang.nama}"
+                 data-stok="${barang.stok_tersedia}"
+                 style="cursor: pointer; transition: all 0.2s;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="flex-grow-1">
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <span class="badge bg-primary">${barang.kode_barang}</span>
+                            <strong>${barang.nama}</strong>
+                        </div>
+                        <div class="d-flex gap-3 small">
+                            <span class="text-muted">
+                                <i class="fas fa-box me-1"></i>Stok: 
+                                <span class="badge ${stokBadgeClass}">${barang.stok_tersedia}</span>
+                            </span>
+                            ${barang.kategori ? `<span class="text-muted"><i class="fas fa-tag me-1"></i>${barang.kategori}</span>` : ''}
+                        </div>
+                    </div>
+                    <div class="ms-3">
+                        <button class="btn btn-sm btn-success pilih-barang-btn" 
+                                onclick="event.stopPropagation(); pilihBarangDariList(${barang.id}, '${barang.kode_barang}', '${barang.nama.replace(/'/g, "\\'")}', ${barang.stok_tersedia})">
+                            <i class="fas fa-plus me-1"></i>Pilih
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+                });
+
+                html += `
+            </div>
+        </div>
+    `;
+
+                $('#barangSearchResult').html(html);
+
+                // Tambahkan event click pada item
+                $('.barang-search-item').click(function() {
+                    const id = $(this).data('id');
+                    const kode = $(this).data('kode');
+                    const nama = $(this).data('nama');
+                    const stok = $(this).data('stok');
+
+                    // Tampilkan form input jumlah
+                    tampilkanFormJumlahBarang(id, kode, nama, stok);
+                });
+            }
+
+            // Fungsi untuk menampilkan form jumlah barang
+            function tampilkanFormJumlahBarang(id, kode, nama, stokTersedia) {
+                if (stokTersedia <= 0) {
+                    showAlert('warning', 'Peringatan!', 'Stok barang ini sedang habis!');
+                    return;
+                }
+
+                let stokClass = 'stok-tinggi';
+                if (stokTersedia <= 3) {
+                    stokClass = 'stok-rendah';
+                } else if (stokTersedia <= 10) {
+                    stokClass = 'stok-sedang';
+                }
+
+                const formHtml = `
+        <div class="card border-primary mt-2" id="formJumlah_${id}">
+            <div class="card-body py-2">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-1">
+                            <i class="fas fa-box me-2"></i>${nama}
+                        </h6>
+                        <div class="d-flex gap-3 small">
+                            <span class="text-muted">
+                                <i class="fas fa-barcode me-1"></i>${kode}
+                            </span>
+                            <span class="${stokClass} stok-indicator">
+                                <i class="fas fa-boxes me-1"></i>Stok: ${stokTersedia}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="input-group input-group-jumlah" style="width: 140px;">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" onclick="kurangiJumlahTemp(${id})">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <input type="number" 
+                                   class="form-control form-control-sm text-center"
+                                   id="jumlah_temp_${id}"
+                                   min="1" 
+                                   max="${stokTersedia}"
+                                   value="1"
+                                   onchange="validasiJumlahTemp(${id}, this.value, ${stokTersedia})">
+                            <button class="btn btn-outline-secondary btn-sm" type="button" onclick="tambahJumlahTemp(${id}, ${stokTersedia})">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <div class="btn-group">
+                            <button type="button" 
+                                    class="btn btn-sm btn-primary"
+                                    onclick="tambahBarangDenganJumlah(${id}, '${kode}', '${nama.replace(/'/g, "\\'")}', ${stokTersedia})">
+                                <i class="fas fa-check me-1"></i> Tambah
+                            </button>
+                            <button type="button" 
+                                    class="btn btn-sm btn-outline-secondary"
+                                    onclick="batalTambahBarang(${id})">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+                // Hapus form sebelumnya jika ada
+                $('#formJumlah_' + id).remove();
+                $('#barangSearchResult').append(formHtml);
+            }
+
+            // Fungsi-fungsi untuk mengatur jumlah sementara
+            window.kurangiJumlahTemp = function(barangId) {
+                const input = $('#jumlah_temp_' + barangId);
+                let current = parseInt(input.val()) || 1;
+                if (current > 1) {
+                    input.val(current - 1);
+                }
+            };
+
+            window.tambahJumlahTemp = function(barangId, max) {
+                const input = $('#jumlah_temp_' + barangId);
+                let current = parseInt(input.val()) || 1;
+                if (current < max) {
+                    input.val(current + 1);
+                }
+            };
+
+            window.validasiJumlahTemp = function(barangId, jumlah, max) {
+                jumlah = parseInt(jumlah) || 1;
+                if (jumlah < 1) {
+                    $('#jumlah_temp_' + barangId).val(1);
+                    showAlert('warning', 'Peringatan!', 'Jumlah minimal 1');
+                }
+                if (jumlah > max) {
+                    $('#jumlah_temp_' + barangId).val(max);
+                    showAlert('warning', 'Peringatan!', 'Jumlah melebihi stok tersedia!');
+                }
+            };
+
+            window.batalTambahBarang = function(barangId) {
+                $('#formJumlah_' + barangId).remove();
+            };
+
+            window.pilihBarangDariList = function(id, kode, nama, stokTersedia) {
+                tampilkanFormJumlahBarang(id, kode, nama, stokTersedia);
+            };
+
+            window.tambahBarangDenganJumlah = function(id, kode, nama, stokTersedia) {
+                const jumlah = parseInt($('#jumlah_temp_' + id).val()) || 1;
+                tambahBarangKeList(id, kode, nama, stokTersedia, jumlah);
+            };
+
+            // Modifikasi fungsi tambahBarangKeList untuk menerima parameter jumlah
+            window.tambahBarangKeList = function(id, kode, nama, stokTersedia, jumlah = null) {
+                // Cek apakah barang sudah ada di list
+                if (barangList.includes(id)) {
+                    showAlert('warning', 'Peringatan!', 'Barang ini sudah ada dalam daftar pinjam!');
+                    $('#formJumlah_' + id).remove();
+                    return;
+                }
+
+                // Jika jumlah tidak disediakan, ambil dari input
+                if (jumlah === null) {
+                    jumlah = parseInt($('#jumlah_' + id).val()) || 1;
+                }
+
+                if (jumlah < 1) {
+                    showAlert('warning', 'Peringatan!', 'Jumlah minimal 1');
+                    return;
+                }
+
+                if (jumlah > stokTersedia) {
+                    showAlert('warning', 'Peringatan!', `Jumlah melebihi stok tersedia! Stok: ${stokTersedia}`);
+                    return;
+                }
+
+                barangCounter++;
+                barangList.push(id);
+
+                // Tentukan kelas stok
+                let stokClass = 'stok-tinggi';
+                let stokBadgeClass = 'bg-success';
+                if (stokTersedia <= 3) {
+                    stokClass = 'stok-rendah';
+                    stokBadgeClass = 'bg-danger';
+                } else if (stokTersedia <= 10) {
+                    stokClass = 'stok-sedang';
+                    stokBadgeClass = 'bg-warning text-dark';
+                }
+
+                const row = `
+    <tr id="row_${id}" class="barang-row">
+        <td class="text-center">${barangCounter}</td>
+        <td>
+            <span class="badge bg-primary">${kode}</span>
+        </td>
+        <td>${nama}</td>
+        <td class="text-center">
+            <span class="badge ${stokBadgeClass}">
+                <i class="fas fa-boxes me-1"></i>${stokTersedia}
+            </span>
+        </td>
+        <td class="text-center">
+            <div class="input-group input-group-jumlah" style="width: 130px; margin: 0 auto;">
+                <button class="btn btn-outline-secondary btn-sm" type="button" onclick="updateJumlah(${id}, -1, ${stokTersedia})">
+                    <i class="fas fa-minus"></i>
+                </button>
+                <input type="number" 
+                       class="form-control form-control-sm text-center"
+                       name="barang[${id}][jumlah]"
+                       id="list_jumlah_${id}"
+                       value="${jumlah}"
+                       min="1"
+                       max="${stokTersedia}"
+                       onchange="updateJumlahInput(${id}, this.value, ${stokTersedia})"
+                       required>
+                <button class="btn btn-outline-secondary btn-sm" type="button" onclick="updateJumlah(${id}, 1, ${stokTersedia})">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
+            <div class="mt-1">
+                <button type="button" class="btn btn-sm btn-link text-danger p-0" onclick="hapusBarang(${id})">
+                    <i class="fas fa-trash-alt me-1"></i>Hapus
+                </button>
+            </div>
+        </td>
+    </tr>
+    `;
+
+                // Sembunyikan pesan kosong jika ada
+                $('#emptyBarang').hide();
+                $('#barangList').append(row);
+                updateTotalBarang();
+
+                // Hapus form jumlah dan hasil pencarian
+                $('#formJumlah_' + id).remove();
+                $('#barangSearchResult').html('');
+
+                showAlert('success', 'Berhasil!', 'Barang berhasil ditambahkan ke daftar pinjam');
+            };
+
+            // Fungsi untuk menghapus barang dari list
+            window.hapusBarang = function(id) {
+                if (confirm('Apakah Anda yakin ingin menghapus barang ini dari daftar?')) {
+                    $('#row_' + id).remove();
+
+                    // Hapus dari array barangList
+                    const index = barangList.indexOf(id);
+                    if (index > -1) {
+                        barangList.splice(index, 1);
+                    }
+
+                    // Update nomor urut
+                    barangCounter = 0;
+                    $('#barangList tr.barang-row').each(function() {
+                        barangCounter++;
+                        $(this).find('td:first').text(barangCounter);
+                    });
+
+                    updateTotalBarang();
+
+                    // Tampilkan pesan kosong jika tidak ada barang
+                    if (barangList.length === 0) {
+                        $('#emptyBarang').show();
+                    }
+
+                    showAlert('info', 'Berhasil', 'Barang telah dihapus dari daftar');
+                }
+            };
 
             function tampilkanHasilPencarianBarang(barang) {
                 // Tentukan kelas stok berdasarkan jumlah

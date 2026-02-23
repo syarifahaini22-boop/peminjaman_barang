@@ -41,6 +41,11 @@ Route::middleware(['auth'])->group(function () {
         ->name('barang.searchByKode')
         ->where('search', '[a-zA-Z0-9-]+'); // Pastikan hanya string, bukan 'create'
 
+
+
+    // Route untuk pencarian barang berdasarkan kode atau nama
+    Route::get('/barang/cari', [BarangController::class, 'searchByKodeOrNama'])->name('barang.cari');
+
     Route::get('/mahasiswa/search', [MahasiswaController::class, 'searchByNim'])
         ->name('mahasiswa.searchByNim')
         ->where('search', '[0-9]+');
@@ -65,6 +70,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/barang/{id}/hard-delete', [BarangController::class, 'hardDelete'])->name('barang.hardDelete');
     Route::post('/barang/restore-all', [BarangController::class, 'restoreAll'])->name('barang.restore-all');
     Route::post('/barang/empty-trash', [BarangController::class, 'emptyTrash'])->name('barang.empty-trash');
+
 
     // Debug route
     Route::get('/check-db', [BarangController::class, 'checkDatabase']);
