@@ -165,15 +165,15 @@
                                 <div class="card-body">
                                     <!-- PENCARIAN BARANG BERDASARKAN KODE -->
                                     <div class="mb-3">
-                                        <label class="form-label">Cari Barang (Kode Barang)</label>
+                                        <label class="form-label">Cari Barang</label>
                                         <div class="input-group">
                                             <input type="text" class="form-control" id="kode_barang_search"
-                                                placeholder="Masukkan kode barang...">
+                                                placeholder="Masukkan kode atau nama barang...">
                                             <button type="button" class="btn btn-primary" id="btnCariBarang">
                                                 <i class="fas fa-search me-1"></i> Cari
                                             </button>
                                         </div>
-                                        <small class="text-muted">Masukkan kode barang yang valid</small>
+                                        <small class="text-muted">Masukkan kode atau nama barang yang valid</small>
                                     </div>
 
                                     <!-- HASIL PENCARIAN BARANG -->
