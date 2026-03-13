@@ -44,7 +44,7 @@
                             </div>
 
                             <div class="mb-3">
-                                <label for="fakultas" class="form-label">Fakultas</label>
+                                <label for="fakultas" class="form-label">Program Studi</label>
                                 <input type="text" class="form-control @error('fakultas') is-invalid @enderror"
                                     id="fakultas" name="fakultas" value="{{ old('fakultas') }}">
                                 @error('fakultas')

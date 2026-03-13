@@ -112,19 +112,18 @@
                                         </a>
 
                                         <!-- Tombol Edit -->
-                                        <a href="{{ route('mahasiswa.edit', $item->id) }}" class="btn btn-sm btn-warning"
-                                            title="Edit">
-                                            <i class="fas fa-edit"></i>
+                                        <a href="{{ route('barang.edit', $item->id) }}"
+                                            class="btn-action btn-custom-warning" title="Edit">
+                                            <i class="bi bi-pencil"></i>
                                         </a>
-
                                         <!-- Tombol Hapus -->
                                         <form action="/mahasiswa/{{ $item->id }}" method="POST"
                                             onsubmit="return confirm('Yakin hapus mahasiswa ini?')"
                                             style="margin: 0; display: inline;">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="btn btn-danger btn-sm" title="Hapus">
-                                                <i class="fas fa-trash"></i>
+                                            <button type="submit" class="btn-action btn-custom-danger" title="Hapus">
+                                                <i class="bi bi-trash"></i>
                                             </button>
                                         </form>
                                     </td>

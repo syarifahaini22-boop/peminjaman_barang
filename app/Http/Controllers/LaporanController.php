@@ -246,4 +246,100 @@ class LaporanController extends Controller
 
         return $pdf->download('laporan-' . $type . '-' . date('Y-m-d') . '.pdf');
     }
+
+
+
+    /**
+     * Laporan Mingguan Barang Keluar
+     */
+    public function mingguan(Request $request)
+    {
+        // Validasi request
+        $request->validate([
+            'tanggal_awal' => 'nullable|date',
+            'tanggal_akhir' => 'nullable|date|after_or_equal:tanggal_awal',
+        ]);
+
+        // Set default tanggal (7 hari terakhir) jika tidak ada input
+        $tanggalAwal = $request->tanggal_awal ? Carbon::parse($request->tanggal_awal)->startOfDay() : Carbon::now()->subDays(7)->startOfDay();
+        $tanggalAkhir = $request->tanggal_akhir ? Carbon::parse($request->tanggal_akhir)->endOfDay() : Carbon::now()->endOfDay();
+
+        // Ambil data peminjaman berdasarkan tanggal_peminjaman (sesuai dengan struktur database)
+        $peminjaman = Peminjaman::with(['barang', 'mahasiswa']) // Ganti 'user' menjadi 'mahasiswa'
+            ->whereBetween('tanggal_peminjaman', [$tanggalAwal, $tanggalAkhir]) // Ganti 'tanggal' menjadi 'tanggal_peminjaman'
+            ->orderBy('tanggal_peminjaman', 'desc')
+            ->get();
+
+        // Hitung total barang keluar (jumlah barang dari relasi pivot)
+        $totalBarangKeluar = 0;
+        foreach ($peminjaman as $pinjam) {
+            foreach ($pinjam->barang as $barang) {
+                $totalBarangKeluar += $barang->pivot->jumlah ?? 1;
+            }
+        }
+
+        // Hitung total transaksi
+        $totalTransaksi = $peminjaman->count();
+
+        // Hitung total item unik (barang_id unik)
+        $barangIds = [];
+        foreach ($peminjaman as $pinjam) {
+            foreach ($pinjam->barang as $barang) {
+                $barangIds[] = $barang->id;
+            }
+        }
+        $totalItemUnik = count(array_unique($barangIds));
+
+        // Hitung total kategori
+        $kategoriIds = [];
+        foreach ($peminjaman as $pinjam) {
+            foreach ($pinjam->barang as $barang) {
+                if ($barang->kategori_id) {
+                    $kategoriIds[] = $barang->kategori_id;
+                }
+            }
+        }
+        $totalKategori = count(array_unique($kategoriIds));
+
+        // Data untuk chart (harian)
+        $chartData = [];
+        $period = new \DatePeriod(
+            $tanggalAwal,
+            new \DateInterval('P1D'),
+            $tanggalAkhir->copy()->addDay()
+        );
+
+        foreach ($period as $date) {
+            $tanggal = $date->format('Y-m-d');
+
+            // Ambil semua peminjaman di tanggal tersebut
+            $peminjamanHarian = Peminjaman::with('barang')
+                ->whereDate('tanggal_peminjaman', $tanggal)
+                ->get();
+
+            // Hitung jumlah barang keluar di tanggal tersebut
+            $jumlah = 0;
+            foreach ($peminjamanHarian as $pinjam) {
+                foreach ($pinjam->barang as $barang) {
+                    $jumlah += $barang->pivot->jumlah ?? 1;
+                }
+            }
+
+            $chartData[] = [
+                'tanggal' => $date->format('d M'),
+                'jumlah' => $jumlah
+            ];
+        }
+
+        return view('laporan.mingguan', compact(
+            'peminjaman',
+            'tanggalAwal',
+            'tanggalAkhir',
+            'totalBarangKeluar',
+            'totalTransaksi',
+            'totalItemUnik',
+            'totalKategori',
+            'chartData'
+        ));
+    }
 }

@@ -92,6 +92,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/pengembalian', [LaporanController::class, 'pengembalian'])->name('laporan.pengembalian');
         Route::get('/barang', [LaporanController::class, 'barang'])->name('laporan.barang');
         Route::get('/mahasiswa', [LaporanController::class, 'mahasiswa'])->name('laporan.mahasiswa');
+        Route::get('/laporan/mingguan', [LaporanController::class, 'mingguan'])->name('laporan.mingguan');
+        Route::get('/bulanan', [LaporanController::class, 'bulanan'])->name('bulanan');
         Route::get('/export-pdf', [LaporanController::class, 'exportPdf'])->name('laporan.export.pdf');
     });
 });

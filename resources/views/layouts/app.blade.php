@@ -431,7 +431,7 @@
                 <!-- Top Navbar -->
                 <nav class="navbar-custom">
                     <div class="container-fluid">
-                        <h4 class="mb-0">@yield('title', 'Dashboard')</h4>
+                        <h4 class="mb-0">@yield('title', 'Laporan Mingguan')</h4>
                         <div class="d-flex align-items-center">
                             <span class="me-3 text-muted">
                                 <i class="bi bi-person-circle me-1"></i>

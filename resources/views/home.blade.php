@@ -90,7 +90,19 @@
                             @forelse(App\Models\Peminjaman::with(['barang', 'mahasiswa'])->latest()->limit(5)->get() as $peminjaman)
                                 <div class="list-group-item">
                                     <div class="d-flex w-100 justify-content-between">
-                                        <h6 class="mb-1">{{ $peminjaman->barang->nama }}</h6>
+                                        <h6 class="mb-1">
+                                            @if ($peminjaman->barang)
+                                                @if (is_object($peminjaman->barang) && method_exists($peminjaman->barang, 'nama'))
+                                                    {{ $peminjaman->barang->nama }}
+                                                @elseif(is_array($peminjaman->barang) && isset($peminjaman->barang['nama']))
+                                                    {{ $peminjaman->barang['nama'] }}
+                                                @else
+                                                    Barang #{{ $peminjaman->barang_id }}
+                                                @endif
+                                            @else
+                                                Barang tidak ditemukan
+                                            @endif
+                                        </h6>
                                         <small>
                                             @if ($peminjaman->status == 'dipinjam')
                                                 <span class="badge bg-warning">Dipinjam</span>
@@ -103,9 +115,19 @@
                                     </div>
                                     <p class="mb-1">
                                         <small>
-                                            <i class="fas fa-user"></i> {{ $peminjaman->mahasiswa->name }} |
+                                            <i class="fas fa-user"></i>
+                                            @if ($peminjaman->mahasiswa)
+                                                {{ $peminjaman->mahasiswa->name ?? ($peminjaman->mahasiswa->nama ?? 'Mahasiswa') }}
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
+                                            |
                                             <i class="fas fa-calendar"></i>
-                                            {{ $peminjaman->tanggal_peminjaman->format('d/m/Y') }}
+                                            @if ($peminjaman->tanggal_peminjaman instanceof \Carbon\Carbon)
+                                                {{ $peminjaman->tanggal_peminjaman->format('d/m/Y') }}
+                                            @else
+                                                {{ date('d/m/Y', strtotime($peminjaman->tanggal_peminjaman)) }}
+                                            @endif
                                         </small>
                                     </p>
                                 </div>

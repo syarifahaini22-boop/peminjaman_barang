@@ -145,6 +145,57 @@
             </div>
 
 
+            <!-- Laporan Mingguan Card -->
+            <div class="col-xl-4 col-lg-6 mb-4">
+                <div class="card border-0 shadow-sm h-100 hover-card">
+                    <div class="card-header bg-white border-0 py-3 d-flex align-items-center">
+                        <div class="icon-wrapper bg-warning bg-opacity-10 rounded-circle p-2 me-3">
+                            <i class="fas fa-chart-line text-warning fs-5"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-0">Laporan Mingguan</h5>
+                            <small class="text-muted">Barang keluar per periode</small>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text text-muted">Rekapitulasi barang keluar berdasarkan rentang tanggal yang dipilih.
+                        </p>
+
+
+
+                        <div class="mb-3">
+                            <span class="badge bg-warning bg-opacity-10 text-warning me-2">Harian</span>
+                            <span class="badge bg-warning bg-opacity-10 text-warning me-2">Mingguan</span>
+                            <span class="badge bg-warning bg-opacity-10 text-warning">Bulanan</span>
+                        </div>
+
+
+
+                        <div class="d-flex align-items-center text-muted">
+                            <i class="fas fa-box me-2"></i>
+                            <small>transaksi peminjaman</small>
+                        </div>
+                        </form>
+                    </div>
+                    <div class="card-footer bg-white border-0 pt-0">
+                        <a href="{{ route('laporan.mingguan') }}" class="btn btn-warning w-100">
+                            <i class="fas fa-file-alt me-2"></i>Akses Laporan
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CSS tambahan jika diperlukan -->
+            <style>
+                .hover-card {
+                    transition: transform 0.2s ease-in-out;
+                }
+
+                .hover-card:hover {
+                    transform: translateY(-5px);
+                }
+            </style>
+
         </div>
     </div>
 
